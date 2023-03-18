@@ -1,0 +1,8 @@
+{
+  "name": "mangasenpai",
+  "displayName": "Manga Senpai",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-1899986561877164~2253236662",
+    "ios_app_id": "ca-app-pub-1899986561877164~2253236662"
+  }
+}
