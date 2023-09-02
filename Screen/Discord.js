@@ -1,5 +1,5 @@
-import React from 'react';
-import {View, Text, Dimensions} from 'react-native';
+import React, {useCallback} from 'react';
+import {View, Text, Dimensions, Linking} from 'react-native';
 import TopBar from '../Components/TopBar';
 import Icon from 'react-native-vector-icons/Fontisto';
 import {useTheme} from '@react-navigation/native';
@@ -7,8 +7,24 @@ import Banner from '../Ads/Banner';
 
 const dimension = Dimensions.get('window');
 
+const URL = 'https://forms.gle/8wnYcfkkEXY867KC9';
+
 const Discord = () => {
   const {colors} = useTheme();
+
+  const handlePress = useCallback(async () => {
+    // Checking if the link is supported for links with custom URL scheme.
+    const supported = await Linking.canOpenURL(URL);
+
+    if (supported) {
+      // Opening the link with some app, if the URL scheme is "http" the web link should be opened
+      // by some browser in the mobile
+      await Linking.openURL(URL);
+    } else {
+      Alert.alert(`Don't know how to open this URL: ${URL}`);
+    }
+  }, [URL]);
+
   return (
     <>
       <TopBar />
@@ -39,10 +55,14 @@ const Discord = () => {
           Welcome to Manga Senpai. It's a place to read all kinds of manga,
           manhua and manhwa. It is free to use and always will be.
         </Text>
-        {/* <Icon.Button name="discord" backgroundColor="#3b5998">
-          Join Discord Community
-        </Icon.Button> */}
-        <Banner/>
+
+        <Icon.Button
+          name="messenger"
+          backgroundColor="#E5A168"
+          onPress={handlePress}>
+          Feedback / Query / Suggestions
+        </Icon.Button>
+        <Banner />
       </View>
     </>
   );

@@ -58,7 +58,7 @@ const AnimeDetail = ({route, navigation}) => {
           </ImageBackground>
           <ScrollView style={styles.container} nestedScrollEnabled={true}>
             <View style={{height: 380}}></View>
-            
+
             <View style={[styles.detail, {backgroundColor: colors.background}]}>
               <Text style={[styles.title, {color: colors.animeCard['title']}]}>
                 {mangaDetailData.title}
@@ -71,6 +71,7 @@ const AnimeDetail = ({route, navigation}) => {
                 {mangaDetailData.hasOwnProperty('Alternative') &&
                   mangaDetailData['Alternative'].split(';').map((x, key) => (
                     <Text
+                      key={key}
                       style={{
                         marginBottom: 15,
                         textAlign: 'center',
@@ -88,7 +89,7 @@ const AnimeDetail = ({route, navigation}) => {
                     // onPress={() =>
                     //   navigation.navigate('GenreAnimeList', {genre: x.trim()})
                     // }
-                    >
+                  >
                     <Text
                       style={[
                         styles.genre,
@@ -104,24 +105,25 @@ const AnimeDetail = ({route, navigation}) => {
                 ))}
               </View>
               <ScrollView nestedScrollEnabled={true}>
-              <Text
-                style={[
-                  styles.summaryText,
-                  {color: colors.animedetail.detail},
-                ]}>
-                {mangaDetailData['summary'].trim()}
-              </Text>
-    
-              <Button
-                color={colors.titleColor.orange}
-                title="Start Reading"
-                onPress={() =>
-                  navigation.navigate('AnimeEpisodeList', {
-                    episodeList: mangaDetailData.chapters,
-                    name: mangaDetailData.title,
-                  })
-                }
-              /></ScrollView>
+                <Text
+                  style={[
+                    styles.summaryText,
+                    {color: colors.animedetail.detail},
+                  ]}>
+                  {mangaDetailData['summary'].trim()}
+                </Text>
+
+                <Button
+                  color={colors.titleColor.orange}
+                  title="Start Reading"
+                  onPress={() =>
+                    navigation.navigate('AnimeEpisodeList', {
+                      episodeList: mangaDetailData.chapters,
+                      name: mangaDetailData.title,
+                    })
+                  }
+                />
+              </ScrollView>
             </View>
           </ScrollView>
         </>

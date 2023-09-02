@@ -10,7 +10,7 @@ import {
 import TopBar from '../Components/TopBar';
 import {useTheme} from '@react-navigation/native';
 import {ListItem} from 'react-native-elements';
-import { interstitial } from '../Ads/Interstitial';
+import {interstitial} from '../Ads/Interstitial';
 import Banner from '../Ads/Banner';
 
 const dimension = Dimensions.get('window');
@@ -21,24 +21,23 @@ const AnimeEpisodeList = ({route, navigation}) => {
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
       <TopBar title={route.params.name} />
-      <Banner/>
+      <Banner />
       <View style={[styles.mainContainer, {height: dimension.height - 120}]}>
         <FlatList
-          data={route.params.episodeList.reverse()}
+          data={route.params.episodeList}
           renderItem={({item, index}) => (
             <TouchableOpacity
-              onPress={() =>{
-                try{
-                interstitial.load()
-               interstitial.show()
-                }catch(e){
-                  console.log(e)
+              onPress={() => {
+                try {
+                  interstitial.load();
+                  interstitial.show();
+                } catch (e) {
+                  console.log(e);
                 }
                 navigation.navigate('Manga', {
                   link: item.link,
-                })
-              }
-              }
+                });
+              }}
               activeOpacity={0.7}
               style={[
                 {

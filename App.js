@@ -4,20 +4,22 @@ import StackNavigation from './Navigation/StackNavigation';
 import {EventRegister} from 'react-native-event-listeners';
 import {getData, ThemePalette} from './Theme/ThemePalette';
 import mobileAds from 'react-native-google-mobile-ads';
+import SplashScreen from 'react-native-splash-screen';
 
 const App = () => {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
+    SplashScreen.hide();
     mobileAds()
-  .initialize()
-  .then(adapterStatuses => {
-    console.log("initialised",adapterStatuses)
-  });
+      .initialize()
+      .then(adapterStatuses => {
+        console.log('initialised', adapterStatuses);
+      });
     let eventListener = EventRegister.addEventListener(
       'changeThemeEvent',
       data => {
-        console.log("data>>>>>",data);
+        console.log('data>>>>>', data);
         setIsDark(data);
       },
     );
