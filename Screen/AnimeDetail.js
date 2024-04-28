@@ -104,16 +104,8 @@ const AnimeDetail = ({route, navigation}) => {
                   </View>
                 ))}
               </View>
-              <ScrollView nestedScrollEnabled={true}>
-                <Text
-                  style={[
-                    styles.summaryText,
-                    {color: colors.animedetail.detail},
-                  ]}>
-                  {mangaDetailData['summary'].trim()}
-                </Text>
-
-                <Button
+              <View style={{marginBottom:15,marginTop:15}}>
+              <Button
                   color={colors.titleColor.orange}
                   title="Start Reading"
                   onPress={() =>
@@ -122,14 +114,22 @@ const AnimeDetail = ({route, navigation}) => {
                       name: mangaDetailData.title,
                     })
                   }
-                />
+                /></View>
+              <ScrollView nestedScrollEnabled={true}>
+                <Text
+                  style={[
+                    styles.summaryText,
+                    {color: colors.animedetail.detail},
+                  ]}>
+                  {mangaDetailData['summary'].trim()}
+                </Text>
               </ScrollView>
             </View>
           </ScrollView>
         </>
       ) : (
         <>
-          <TopBar />
+          <TopBar navigation={navigation}/>
           <View
             style={{
               backgroundColor: colors.background,

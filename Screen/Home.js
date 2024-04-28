@@ -60,7 +60,7 @@ const Home = ({navigation}) => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar />
+      <TopBar showNavigation={false}/>
       <Banner/>
       {showBanner && (
         <View
@@ -164,6 +164,8 @@ const Home = ({navigation}) => {
             /> */}
             
             <FlatList
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
               data={[
                 {
                   title: 'Manhua',
@@ -232,6 +234,8 @@ const Home = ({navigation}) => {
               </View>
 
               <FlatList
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
                 data={homePageData.monthlyTrending}
                 renderItem={({item}) => (
                   <AnimeCard
@@ -272,6 +276,8 @@ const Home = ({navigation}) => {
               </View>
 
               <FlatList
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
                 data={homePageData.recentlyUpdated}
                 renderItem={({item}) => (
                   <AnimeCard
@@ -312,6 +318,8 @@ const Home = ({navigation}) => {
               </View>
 
               <FlatList
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
                 data={homePageData.newManga}
                 renderItem={({item}) => (
                   <AnimeCard

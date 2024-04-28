@@ -65,7 +65,7 @@ const Search = ({navigation, route}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar />
+      <TopBar showNavigation={false}/>
       <SearchBar
         placeholder="Start searching..."
         onChangeText={searchAnime}
@@ -93,6 +93,8 @@ const Search = ({navigation, route}) => {
           <>
             {animeList?.searchlist?.length > 0 ? (
               <FlatList
+              showsVerticalScrollIndicator={false}
+  showsHorizontalScrollIndicator={false}
                 style={{height: dimension.height - 165}}
                 data={animeList.searchlist}
                 renderItem={({item}) => (

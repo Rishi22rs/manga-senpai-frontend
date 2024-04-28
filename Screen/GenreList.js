@@ -76,6 +76,7 @@ const GenreContainer = ({data, navigation, colors, index}) => {
           data: '',
           episodeLink: false,
           url: data.link,
+          title:data.genre
         })
       }>
       <Text style={[styles.genreStyle, {color: colors.carouselCardText.title}]}>
@@ -97,11 +98,13 @@ const GenreList = ({navigation}) => {
   const {colors} = useTheme();
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar title="Genre List" />
+      <TopBar title="Genre List" navigation={navigation} showNavigation={false}/>
       <Banner/>
       <View style={[styles.mainContainer, {height: dimension.height - 153}]}>
         {genreList ? (
           <FlatList
+          showsVerticalScrollIndicator={false}
+  showsHorizontalScrollIndicator={false}
             data={genreList}
             renderItem={({item, index}) => (
               <GenreContainer

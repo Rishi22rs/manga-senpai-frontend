@@ -53,11 +53,13 @@ const SeeAll = ({route, navigation}) => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: colors['background']}]}>
-      <TopBar title={route.params.title} />
+      <TopBar title={route.params.title} navigation={navigation}/>
       <Banner/>
       {route.params?.url && data && (
         <View>
           <FlatList
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
             data={range(1, data[0].numOfPages)}
             renderItem={({item, index}) => (
               <EpisodeBtn
@@ -80,6 +82,8 @@ const SeeAll = ({route, navigation}) => {
             : dimension.height - 80,
         }}>
         <FlatList
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
           data={route.params?.url ? data : route.params.data}
           renderItem={({item}) => (
             <AnimeCard

@@ -42,9 +42,8 @@ const Manga = ({route, navigation}) => {
             />
           </TouchableOpacity>
           <FlatList
-            snapToAlignment="start"
-            decelerationRate={'fast'}
-            snapToInterval={dimensions.height}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
             style={{width: dimensions.width, height: '100%'}}
             data={imgBase64}
             renderItem={({item}) => (
@@ -54,6 +53,7 @@ const Manga = ({route, navigation}) => {
                   backgroundColor: 'white',
                 }}>
                 <View>
+                 
                   <Image
                     resizeMode="contain"
                     source={{
@@ -72,7 +72,7 @@ const Manga = ({route, navigation}) => {
         </>
       ) : (
         <>
-          <TopBar />
+          <TopBar navigation={navigation}/>
           <View
             style={{
               backgroundColor: colors.background,

@@ -20,10 +20,12 @@ const AnimeEpisodeList = ({route, navigation}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar title={route.params.name} />
+      <TopBar title={route.params.name} navigation={navigation}/>
       <Banner />
       <View style={[styles.mainContainer, {height: dimension.height - 120}]}>
         <FlatList
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
           data={route.params.episodeList}
           renderItem={({item, index}) => (
             <TouchableOpacity

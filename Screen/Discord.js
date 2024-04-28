@@ -4,6 +4,9 @@ import TopBar from '../Components/TopBar';
 import Icon from 'react-native-vector-icons/Fontisto';
 import {useTheme} from '@react-navigation/native';
 import Banner from '../Ads/Banner';
+import { appVersion } from "../app.json";
+
+const otaVersion = appVersion;
 
 const dimension = Dimensions.get('window');
 
@@ -27,7 +30,7 @@ const Discord = () => {
 
   return (
     <>
-      <TopBar />
+      <TopBar showNavigation={false}/>
       <View
         style={{
           zIndex: 1001,
@@ -62,6 +65,7 @@ const Discord = () => {
           onPress={handlePress}>
           Feedback / Query / Suggestions
         </Icon.Button>
+        <Text style={{marginTop:30}}>{`1.0.0(${otaVersion})`}</Text>
         <Banner />
       </View>
     </>

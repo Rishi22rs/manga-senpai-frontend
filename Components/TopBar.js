@@ -19,12 +19,12 @@ import {useTheme} from '@react-navigation/native';
 
 const dimension = Dimensions.get('window');
 
-const TopBar = ({title = 'Manga Senpai'}) => {
+const TopBar = ({title = 'Manga Senpai',navigation,showNavigation=true}) => {
   const [isDark, setIsDark] = useState(true);
   const {colors} = useTheme();
 
   let title1 = title.split(' ')[0];
-  let title2 = title.split(' ')[1];
+  let title2 = title.slice(title1.length+1);
 
   useEffect(() => {
     getData().then(res => {
@@ -34,28 +34,29 @@ const TopBar = ({title = 'Manga Senpai'}) => {
 
   return (
     <View style={[styles.myStatusbar, {backgroundColor: colors.background}]}>
+      <View style={styles.backButtonContainer}>
+      {showNavigation&&<TouchableOpacity
+        activeOpacity={1}
+        style={{zIndex: 99}}
+        onPress={() => navigation.goBack()}>
+        <Icon
+          style={{borderColor: 'white'}}
+          name="arrow-left-thin"
+          size={25}
+          color={colors['titleColor']['orange']}
+        />
+      </TouchableOpacity>}
       <View style={styles.titleContainer}>
-        {title === 'Slice of Life' ? (
-          <>
-            <Text
-              style={[{color: colors['titleColor']['orange']}, styles.title]}>
-              Slice
-            </Text>
-            <Text style={[{color: colors['titleColor']['grey']}, styles.title]}>
-              OfLife
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text
-              style={[{color: colors['titleColor']['orange']}, styles.title]}>
-              {title1}
-            </Text>
-            <Text style={[{color: colors['titleColor']['grey']}, styles.title]}>
-              {title2}
-            </Text>
-          </>
-        )}
+        <>
+          <Text
+            style={[{color: colors['titleColor']['orange']}, styles.title]}>
+            {title1}
+          </Text>
+          <Text style={[{color: colors['titleColor']['grey']}, styles.title]}>
+            {title2}
+          </Text>
+        </>
+      </View>
       </View>
       <TouchableOpacity
         onPress={async () => {
@@ -92,6 +93,10 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
   },
+  backButtonContainer:{
+    flexDirection:'row',
+    alignItems:'center'
+  }
 });
 
 export default TopBar;
