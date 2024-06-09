@@ -60,7 +60,7 @@ const Search = ({navigation, route}) => {
 
   const extractName = title => {
     const $ = cheerio.load(title);
-    return $.text();
+    return $.text().charAt(0).toUpperCase() + $.text().slice(1);
   };
 
   return (
@@ -88,13 +88,13 @@ const Search = ({navigation, route}) => {
         // onSubmitEditing={searchAnime}
       />
       
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer]}>
         {animeList ? (
           <>
             {animeList?.searchlist?.length > 0 ? (
               <FlatList
               showsVerticalScrollIndicator={false}
-  showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
                 style={{height: dimension.height - 165}}
                 data={animeList.searchlist}
                 renderItem={({item}) => (
@@ -153,11 +153,13 @@ const Search = ({navigation, route}) => {
 const styles = StyleSheet.create({
   container: {
     height: dimension.height,
+    alignItems:'center'
   },
   containerStyle: {
     borderBottomWidth: 0.5,
     // borderBottomColor: '#dbdbdb',
     borderTopWidth: 0,
+    width:'100%'
   },
   searchHeight: {
     height: 20,

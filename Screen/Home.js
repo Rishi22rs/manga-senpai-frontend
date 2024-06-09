@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   Text,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   View,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {homePage} from '../Scraping/homePage';
 // import Carousel from 'react-native-snap-carousel';
@@ -15,13 +16,15 @@ import CarouselCard from '../Components/CarouselCard';
 import AnimeCard from '../Components/AnimeCard';
 import TopBar from '../Components/TopBar';
 import ActivityLoader from '../Components/ActivityLoader';
-import {useTheme} from '@react-navigation/native';
+import {useFocusEffect, useTheme} from '@react-navigation/native';
 import {mangaListPages} from '../Scraping/mangaListPages';
 import Icon from 'react-native-vector-icons/Fontisto';
 import {getOtherData, storeOtherData} from '../Theme/ThemePalette';
 import mobileAds, { BannerAd, BannerAdSize, TestIds,AppOpenAd, AdEventType } from 'react-native-google-mobile-ads';
 import Banner from '../Ads/Banner';
 import { interstitial } from '../Ads/Interstitial';
+import { isDataPresent, storeData } from '../Hooks/localStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const dimension = Dimensions.get('window');
 
@@ -33,8 +36,40 @@ const Home = ({navigation}) => {
 
   const [showBanner, setShowBanner] = useState(true);
   const [loaded, setLoaded] = useState(false);
+
+ 
+const showAlert = () => {
+  const message = `
+    • Now save a manga, manhwa or manhua you like.
+    • Now sort the list of episodes from start or end or end to start.
+    
+    More features are coming soon🎊 🎊 🎊
+    
+    Enjoy🎉 🎉 🎉 
+      `;
+
+  Alert.alert('New Update Overview', message, [{text: 'Cool'}]);
+};
+  
   useEffect(() => {
-      
+    checkAndShowAlert();
+  }, []);
+
+  const checkAndShowAlert = async () => {
+    try {
+      const alertShown = await AsyncStorage.getItem('alertShown');
+      if (alertShown === null) {
+        // Alert has not been shown yet
+        showAlert();
+        await AsyncStorage.setItem('alertShown', 'true');
+      }
+    } catch (error) {
+      console.error('Error checking or setting alert flag:', error);
+    }
+  };
+
+  useFocusEffect(
+      useCallback(()=>{
     const unsubscribe = interstitial.addAdEventListener(AdEventType.LOADED, () => {
       setLoaded(true);
     });
@@ -50,7 +85,7 @@ const Home = ({navigation}) => {
     });
     // Unsubscribe from events on unmount
     return unsubscribe;
-  }, []);
+},[]));
 
   const hideBanner = () => {
     storeOtherData('@showBanner', 'false');

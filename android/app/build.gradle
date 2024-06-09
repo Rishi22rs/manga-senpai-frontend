@@ -83,6 +83,7 @@ project.ext.react = [
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -137,10 +138,11 @@ android {
     defaultConfig {
         applicationId "com.underratedgames.mangasenpai"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        targetSdkVersion 33
+        versionCode 22002
         versionName "1.0.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+        resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
 
         if (isNewArchitectureEnabled()) {
             // We configure the CMake build only if you decide to opt-in for the New Architecture.
@@ -229,7 +231,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            resValue "string", "CodePushDeploymentKey", '""' 
+            resValue "string", "CodePushDeploymentKey", "3VyFKCqmDVENdsROfU6Cvhh3gxgN8KUHjeQbF"
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -323,4 +325,3 @@ def isNewArchitectureEnabled() {
 }
 
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
-apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"

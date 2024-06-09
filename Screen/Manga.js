@@ -29,7 +29,7 @@ const Manga = ({route, navigation}) => {
     <View>
       {imgBase64 ? (
         <>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             activeOpacity={1}
             style={{zIndex: 99}}
             onPress={() => navigation.goBack()}>
@@ -40,7 +40,8 @@ const Manga = ({route, navigation}) => {
               type="material"
               color={'black'}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          <TopBar showNavigation={true} navigation={navigation}/>
           <FlatList
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}

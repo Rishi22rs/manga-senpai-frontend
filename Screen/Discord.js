@@ -65,7 +65,7 @@ const Discord = () => {
           onPress={handlePress}>
           Feedback / Query / Suggestions
         </Icon.Button>
-        <Text style={{marginTop:30}}>{`1.0.0(${otaVersion})`}</Text>
+        <Text style={{marginTop:30,color: colors['animeCard']['title']}}>{`1.0.0(${otaVersion})`}</Text>
         <Banner />
       </View>
     </>

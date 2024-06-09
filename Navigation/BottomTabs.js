@@ -10,6 +10,8 @@ import Home from '../Screen/Home';
 import GenreList from '../Screen/GenreList';
 import Search from '../Screen/Search';
 import Discord from '../Screen/Discord';
+import Saved from '../Screen/Saved';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,6 +36,8 @@ const BottomTabs = () => {
             return <Entypoicons name={iconName} size={30} color={color} />;
           if (route.name === 'Discord')
             return <Feathericons name="info" size={30} color={color} />;
+          if (route.name === 'Saved')
+            return <Icon name="cards-heart" size={30} color={color} />;
           return <Foundationicons name={iconName} size={30} color={color} />;
         },
         tabBarActiveTintColor: colors.titleColor.orange,
@@ -58,6 +62,11 @@ const BottomTabs = () => {
       <Tab.Screen
         name="GenreList"
         component={GenreList}
+        options={{headerShown: false}}
+      />
+       <Tab.Screen
+        name="Saved"
+        component={Saved}
         options={{headerShown: false}}
       />
       <Tab.Screen

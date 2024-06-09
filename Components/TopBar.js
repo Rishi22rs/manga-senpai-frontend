@@ -40,10 +40,10 @@ const TopBar = ({title = 'Manga Senpai',navigation,showNavigation=true}) => {
         style={{zIndex: 99}}
         onPress={() => navigation.goBack()}>
         <Icon
-          style={{borderColor: 'white'}}
+          style={{borderColor: 'white',backgroundColor:colors['titleColor']['orange'],borderRadius:4,marginRight:10}}
           name="arrow-left-thin"
           size={25}
-          color={colors['titleColor']['orange']}
+          color={colors.background}
         />
       </TouchableOpacity>}
       <View style={styles.titleContainer}>

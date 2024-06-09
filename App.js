@@ -32,7 +32,7 @@ const App = () => {
 
   useEffect(() => {
     SplashScreen.hide();
-    // initialiseCodePush();
+    initialiseCodePush();
     mobileAds()
       .initialize()
       .then(adapterStatuses => {

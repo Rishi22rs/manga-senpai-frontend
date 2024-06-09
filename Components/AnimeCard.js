@@ -7,8 +7,10 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  ImageBackground,
 } from 'react-native';
-import {getData, selectedTheme, ThemePalette} from '../Theme/ThemePalette';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { getStoredData, isDataPresent, storeData } from '../Hooks/localStorage';
 
 const dimension = Dimensions.get('window');
 
@@ -21,17 +23,42 @@ const AnimeCard = ({
   episodeLink,
 }) => {
   const {colors} = useTheme();
+  const [liked,setLiked]=useState()
+  useEffect(()=>{
+    isDataPresent("liked",{title, banner, detail, animeLink}).then(res=>setLiked(res))
+  })
 
   return (
-    <TouchableOpacity
+    <>
+    {liked!==undefined&&<TouchableOpacity
       activeOpacity={0.5}
       style={styles.container}
-      onPress={() =>
-        episodeLink
-          ? navigation.navigate('AnimePlayer', {episodeLink: animeLink})
-          : navigation.navigate('AnimeDetail', {animeLink})
+      onPress={() =>{
+       navigation.navigate('AnimeDetail', {animeLink})
+      }
       }>
-      <Image source={{uri: banner}} style={styles.cardImg} />
+      <View
+        style={{
+          borderColor: 'black',
+          borderRadius: 15,
+          overflow: 'hidden',
+        }}>
+        <ImageBackground source={{uri: banner}} style={styles.cardImg}>
+          <Icon
+            onPress={async() => {
+              let isPresent=await isDataPresent("liked",{title, banner, detail, animeLink})
+              !isPresent?storeData('liked', {title, banner, detail, animeLink}).then(res=>{
+                setLiked(true)
+              }):storeData('liked', {title, banner, detail, animeLink}).then(res=>{
+                setLiked(false)
+              })
+            }}
+            name="cards-heart"
+            size={30}
+            color={liked?colors.titleColor.orange:colors.background}
+          />
+        </ImageBackground>
+      </View>
       <Text
         numberOfLines={2}
         style={[styles.animeTitle, {color: colors['animeCard']['title']}]}>
@@ -40,7 +67,7 @@ const AnimeCard = ({
       <Text style={[styles.subText, {color: colors['animeCard']['subText']}]}>
         {detail}
       </Text>
-    </TouchableOpacity>
+    </TouchableOpacity>}</>
   );
 };
 
@@ -53,13 +80,15 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 0,
-    marginLeft: 20,
+    marginHorizontal: 10,
     marginTop: 10,
+    alignItems:'center',
   },
   cardImg: {
     height: 200,
     width: dimension.width / 2.5,
-    borderRadius: 15,
+    alignItems:"flex-end",
+    padding:5
   },
   heading: {
     marginBottom: 10,
