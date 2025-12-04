@@ -215,7 +215,7 @@ android {
     signingConfigs {
         release {
             if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
-                storeFile file('my-upload-key.keystore')
+                storeFile file('mskey.keystore')
                 storePassword 'Hellomangasenpai@22'
                 keyAlias 'my-key-alias'
                 keyPassword 'Hellomangasenpai@22'
