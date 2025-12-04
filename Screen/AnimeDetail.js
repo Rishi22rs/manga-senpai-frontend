@@ -36,7 +36,7 @@ const AnimeDetail = ({route, navigation}) => {
 
   return (
     <View>
-      {/* {mangaDetailData ? (
+      {mangaDetailData ? (
         <>
           <ImageBackground
             source={{uri: mangaDetailData.banner}}
@@ -67,11 +67,11 @@ const AnimeDetail = ({route, navigation}) => {
               </Text>
               <Text
                 style={[styles.subTitle, {color: colors.animeCard['title']}]}>
-                {mangaDetailData['Status'].trim()}
+                {mangaDetailData['status'].trim()}
               </Text>
               <View>
-                {mangaDetailData.hasOwnProperty('Alternative') &&
-                  mangaDetailData['Alternative'].split(';').map((x, key) => (
+                {mangaDetailData.hasOwnProperty('alt_name') &&
+                  mangaDetailData['alt_name'].map((x, key) => (
                     <Text
                       key={key}
                       style={{
@@ -85,7 +85,7 @@ const AnimeDetail = ({route, navigation}) => {
                   ))}
               </View>
               <View style={styles.genreContainer}>
-                {mangaDetailData['Genres'].split('-').map((x, key) => (
+                {mangaDetailData['genres'].map((x, key) => (
                   <View
                     key={key}
                     // onPress={() =>
@@ -141,7 +141,7 @@ const AnimeDetail = ({route, navigation}) => {
             <ActivityLoader />
           </View>
         </>
-      )} */}
+      )}
     </View>
   );
 };

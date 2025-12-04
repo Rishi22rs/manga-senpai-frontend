@@ -22,64 +22,65 @@ const Manga = ({route, navigation}) => {
   const {colors} = useTheme();
 
   useEffect(() => {
-    mangaChapter(setImgBase64, setLoadedCount, route.params.link);
+    mangaChapter(route.params.link).then(res => {
+      setImgBase64(res);
+      res.forEach(url => Image.prefetch(url));
+    });
   }, []);
+
+  const RenderMangaImage = ({item}) => {
+    const [loading, setLoading] = useState(true);
+
+    return (
+      <View style={{backgroundColor: 'white'}}>
+        {loading && (
+          <View
+            style={{
+              position: 'absolute',
+              width: dimensions.width,
+              height: dimensions.height,
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 10,
+            }}>
+            <ActivityLoader title="Loading image..." />
+          </View>
+        )}
+
+        <Image
+          resizeMode="contain"
+          source={{uri: item}}
+          style={{
+            width: dimensions.width,
+            height: dimensions.height,
+          }}
+          onLoadStart={() => setLoading(true)}
+          onLoadEnd={() => setLoading(false)}
+        />
+      </View>
+    );
+  };
 
   return (
     <View>
       {imgBase64 ? (
         <>
-          {/* <TouchableOpacity
-            activeOpacity={1}
-            style={{zIndex: 99}}
-            onPress={() => navigation.goBack()}>
-            <Icon
-              raised={colors.carouselCardText.title === 'white' ? true : false}
-              reverse={colors.carouselCardText.title === 'white' ? false : true}
-              name="arrow-back"
-              type="material"
-              color={'black'}
-            />
-          </TouchableOpacity> */}
-          <TopBar showNavigation={true} navigation={navigation}/>
+          <TopBar showNavigation={true} navigation={navigation} />
           <FlatList
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-            style={{width: dimensions.width, height: '100%'}}
             data={imgBase64}
-            renderItem={({item}) => (
-              <View
-                style={{
-                  display: 'flex',
-                  backgroundColor: 'white',
-                }}>
-                <View>
-                 
-                  <Image
-                    resizeMode="contain"
-                    source={{
-                      uri: item,
-                    }}
-                    style={{
-                      width: dimensions.width,
-                      height: dimensions.height,
-                    }}
-                  />
-                </View>
-              </View>
-            )}
-            keyExtractor={item => item}
+            renderItem={({item}) => <RenderMangaImage item={item} />}
+            keyExtractor={(item, index) => index.toString()}
           />
         </>
       ) : (
         <>
-          <TopBar navigation={navigation}/>
+          <TopBar navigation={navigation} />
           <View
             style={{
               backgroundColor: colors.background,
               height: dimensions.height,
             }}>
-            <ActivityLoader title={`Loading \n ${Math.ceil(loadedCount)}%`} />
+            <ActivityLoader title={`Loading`} />
           </View>
         </>
       )}
