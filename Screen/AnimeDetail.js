@@ -26,6 +26,8 @@ const AnimeDetail = ({route, navigation}) => {
 
   const [mangaDetailData, setMangaDetailData] = useState();
 
+  console.log(JSON.stringify(route));
+
   useEffect(() => {
     mangaDetail(route.params.animeLink).then(res => {
       setMangaDetailData(res);
@@ -34,7 +36,7 @@ const AnimeDetail = ({route, navigation}) => {
 
   return (
     <View>
-      {mangaDetailData ? (
+      {/* {mangaDetailData ? (
         <>
           <ImageBackground
             source={{uri: mangaDetailData.banner}}
@@ -104,8 +106,8 @@ const AnimeDetail = ({route, navigation}) => {
                   </View>
                 ))}
               </View>
-              <View style={{marginBottom:15,marginTop:15}}>
-              <Button
+              <View style={{marginBottom: 15, marginTop: 15}}>
+                <Button
                   color={colors.titleColor.orange}
                   title="Start Reading"
                   onPress={() =>
@@ -114,7 +116,8 @@ const AnimeDetail = ({route, navigation}) => {
                       name: mangaDetailData.title,
                     })
                   }
-                /></View>
+                />
+              </View>
               <ScrollView nestedScrollEnabled={true}>
                 <Text
                   style={[
@@ -129,7 +132,7 @@ const AnimeDetail = ({route, navigation}) => {
         </>
       ) : (
         <>
-          <TopBar navigation={navigation}/>
+          <TopBar navigation={navigation} />
           <View
             style={{
               backgroundColor: colors.background,
@@ -138,7 +141,7 @@ const AnimeDetail = ({route, navigation}) => {
             <ActivityLoader />
           </View>
         </>
-      )}
+      )} */}
     </View>
   );
 };
