@@ -160,7 +160,7 @@ export const homePage = async () => {
     const element = $(el);
 
     const title = element.find('.title a').text().trim();
-    const mangaUrl = element.find('.title a').attr('href') || '';
+    const link = element.find('.title a').attr('href') || '';
 
     const banner = element.find('img').attr('data-src') || '';
 
@@ -171,7 +171,7 @@ export const homePage = async () => {
 
     hotManga.push({
       title,
-      mangaUrl,
+      link,
       banner,
       status,
       chapter: chapterText,

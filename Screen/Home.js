@@ -20,10 +20,16 @@ import {useFocusEffect, useTheme} from '@react-navigation/native';
 import {mangaListPages} from '../Scraping/mangaListPages';
 import Icon from 'react-native-vector-icons/Fontisto';
 import {getOtherData, storeOtherData} from '../Theme/ThemePalette';
-import mobileAds, { BannerAd, BannerAdSize, TestIds,AppOpenAd, AdEventType } from 'react-native-google-mobile-ads';
+import mobileAds, {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+  AppOpenAd,
+  AdEventType,
+} from 'react-native-google-mobile-ads';
 import Banner from '../Ads/Banner';
-import { interstitial } from '../Ads/Interstitial';
-import { isDataPresent, storeData } from '../Hooks/localStorage';
+import {interstitial} from '../Ads/Interstitial';
+import {isDataPresent, storeData} from '../Hooks/localStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const dimension = Dimensions.get('window');
@@ -37,9 +43,8 @@ const Home = ({navigation}) => {
   const [showBanner, setShowBanner] = useState(true);
   const [loaded, setLoaded] = useState(false);
 
- 
-const showAlert = () => {
-  const message = `
+  const showAlert = () => {
+    const message = `
     • Now save a manga, manhwa or manhua you like.
     • Now sort the list of episodes from start or end or end to start.
     
@@ -48,9 +53,9 @@ const showAlert = () => {
     Enjoy🎉 🎉 🎉 
       `;
 
-  Alert.alert('New Update Overview', message, [{text: 'Cool'}]);
-};
-  
+    Alert.alert('New Update Overview', message, [{text: 'Cool'}]);
+  };
+
   useEffect(() => {
     checkAndShowAlert();
   }, []);
@@ -69,23 +74,27 @@ const showAlert = () => {
   };
 
   useFocusEffect(
-      useCallback(()=>{
-    const unsubscribe = interstitial.addAdEventListener(AdEventType.LOADED, () => {
-      setLoaded(true);
-    });
+    useCallback(() => {
+      const unsubscribe = interstitial.addAdEventListener(
+        AdEventType.LOADED,
+        () => {
+          setLoaded(true);
+        },
+      );
 
-    // Start loading the interstitial straight away
-    interstitial.load();
-    
-    getOtherData('@showBanner').then(res => {
-      res == 'true' ? setShowBanner(true) : setShowBanner(false);
-    });
-    homePage().then(res => {
-      setHomePageData(res);
-    });
-    // Unsubscribe from events on unmount
-    return unsubscribe;
-},[]));
+      // Start loading the interstitial straight away
+      interstitial.load();
+
+      getOtherData('@showBanner').then(res => {
+        res == 'true' ? setShowBanner(true) : setShowBanner(false);
+      });
+      homePage().then(res => {
+        setHomePageData(res);
+      });
+      // Unsubscribe from events on unmount
+      return unsubscribe;
+    }, []),
+  );
 
   const hideBanner = () => {
     storeOtherData('@showBanner', 'false');
@@ -95,8 +104,8 @@ const showAlert = () => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar showNavigation={false}/>
-      <Banner/>
+      <TopBar showNavigation={false} />
+      <Banner />
       {showBanner && (
         <View
           style={{
@@ -135,8 +144,7 @@ const showAlert = () => {
                 color: colors['animeCard']['title'],
               }}>
               Welcome to Manga Senpai. It's a place to read all kinds of Manga,
-              Manhua and Manhwa. It is free to use and always will
-              be.
+              Manhua and Manhwa. It is free to use and always will be.
             </Text>
             <TouchableOpacity style={{marginTop: 20}} onPress={hideBanner}>
               <Text
@@ -197,10 +205,10 @@ const showAlert = () => {
               sliderWidth={dimension.width}
               itemWidth={dimension.width}
             /> */}
-            
+
             <FlatList
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
               data={[
                 {
                   title: 'Manhua',
@@ -242,7 +250,7 @@ const showAlert = () => {
               )}
               horizontal={true}
             />
-            
+
             <View>
               <View style={styles.sectionTitleContainer}>
                 <Text
@@ -269,8 +277,8 @@ const showAlert = () => {
               </View>
 
               <FlatList
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
                 data={homePageData.monthlyTrending}
                 renderItem={({item}) => (
                   <AnimeCard
@@ -284,7 +292,7 @@ const showAlert = () => {
                 horizontal={true}
               />
             </View>
-<Banner/>
+            <Banner />
             <View>
               <View style={styles.sectionTitleContainer}>
                 <Text
@@ -311,8 +319,8 @@ const showAlert = () => {
               </View>
 
               <FlatList
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
                 data={homePageData.recentlyUpdated}
                 renderItem={({item}) => (
                   <AnimeCard
@@ -326,7 +334,7 @@ const showAlert = () => {
                 horizontal={true}
               />
             </View>
-            <Banner/>
+            <Banner />
             <View>
               <View style={styles.sectionTitleContainer}>
                 <Text
@@ -353,8 +361,8 @@ const showAlert = () => {
               </View>
 
               <FlatList
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
                 data={homePageData.newManga}
                 renderItem={({item}) => (
                   <AnimeCard
@@ -380,7 +388,6 @@ const showAlert = () => {
         )}
         <View style={{height: 70}}></View>
       </ScrollView>
-      
     </SafeAreaView>
   );
 };

@@ -46,7 +46,5 @@ export const genrePage = async () => {
     genres.push(item);
   });
 
-  console.log('genres', genres);
-
   return genres;
 };

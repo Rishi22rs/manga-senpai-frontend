@@ -32,32 +32,36 @@ const Manga = ({route, navigation}) => {
     const [loading, setLoading] = useState(true);
 
     return (
-      <View style={{backgroundColor: 'white'}}>
-        {loading && (
-          <View
-            style={{
-              position: 'absolute',
-              width: dimensions.width,
-              height: dimensions.height,
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 10,
-            }}>
-            <ActivityLoader title="Loading image..." />
-          </View>
-        )}
+      <>
+        {item !== '' ? (
+          <View style={{backgroundColor: 'white'}}>
+            {loading && (
+              <View
+                style={{
+                  position: 'absolute',
+                  width: dimensions.width,
+                  height: dimensions.height,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10,
+                }}>
+                <ActivityLoader title="Loading next page..." />
+              </View>
+            )}
 
-        <Image
-          resizeMode="contain"
-          source={{uri: item}}
-          style={{
-            width: dimensions.width,
-            height: dimensions.height,
-          }}
-          onLoadStart={() => setLoading(true)}
-          onLoadEnd={() => setLoading(false)}
-        />
-      </View>
+            <Image
+              resizeMode="contain"
+              source={{uri: item}}
+              style={{
+                width: dimensions.width,
+                height: dimensions.height,
+              }}
+              onLoadStart={() => setLoading(true)}
+              onLoadEnd={() => setLoading(false)}
+            />
+          </View>
+        ) : null}
+      </>
     );
   };
 
