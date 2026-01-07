@@ -18,7 +18,6 @@ function extractThzq(text) {
 }
 
 export const mangaChapter = async url => {
-  console.log('urlll', url);
   let tmp = [];
   await fetch(url)
     .then(res => res.text())

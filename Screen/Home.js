@@ -11,7 +11,6 @@ import {
   Alert,
 } from 'react-native';
 import {homePage} from '../Scraping/homePage';
-// import Carousel from 'react-native-snap-carousel';
 import CarouselCard from '../Components/CarouselCard';
 import AnimeCard from '../Components/AnimeCard';
 import TopBar from '../Components/TopBar';
@@ -45,15 +44,16 @@ const Home = ({navigation}) => {
 
   const showAlert = () => {
     const message = `
-    • Now save a manga, manhwa or manhua you like.
-    • Now sort the list of episodes from start or end or end to start.
-    
-    More features are coming soon🎊 🎊 🎊
-    
-    Enjoy🎉 🎉 🎉 
-      `;
+This app is completely FREE and still under active development.
+You may notice a few bugs or unexpected behavior at times.
 
-    Alert.alert('New Update Overview', message, [{text: 'Cool'}]);
+I’m actively working on improving performance, fixing issues, and making the app more stable with every update 🚀
+
+Thank you for your patience and support ❤️
+Enjoy exploring manga, manhwa, and manhua!
+`;
+
+    Alert.alert('Still Cooking 👨‍🍳', message, [{text: 'Let’s Go'}]);
   };
 
   useEffect(() => {
@@ -260,7 +260,7 @@ const Home = ({navigation}) => {
                   ]}>
                   Monthly Trending
                 </Text>
-                <Text
+                {/* <Text
                   onPress={() =>
                     navigation.navigate('SeeAll', {
                       data: homePageData.monthlyTrending,
@@ -273,7 +273,7 @@ const Home = ({navigation}) => {
                     {marginTop: 2, color: colors['titleColor']['orange']},
                   ]}>
                   See all
-                </Text>
+                </Text> */}
               </View>
 
               <FlatList
@@ -302,7 +302,7 @@ const Home = ({navigation}) => {
                   ]}>
                   Recently Updated
                 </Text>
-                <Text
+                {/* <Text
                   onPress={() =>
                     navigation.navigate('SeeAll', {
                       data: homePageData.recentlyUpdated,
@@ -315,7 +315,7 @@ const Home = ({navigation}) => {
                     {marginTop: 2, color: colors['titleColor']['orange']},
                   ]}>
                   See all
-                </Text>
+                </Text> */}
               </View>
 
               <FlatList
@@ -344,7 +344,7 @@ const Home = ({navigation}) => {
                   ]}>
                   New Manga
                 </Text>
-                <Text
+                {/* <Text
                   onPress={() =>
                     navigation.navigate('SeeAll', {
                       data: homePageData.newManga,
@@ -357,7 +357,7 @@ const Home = ({navigation}) => {
                     {marginTop: 2, color: colors['titleColor']['orange']},
                   ]}>
                   See all
-                </Text>
+                </Text> */}
               </View>
 
               <FlatList

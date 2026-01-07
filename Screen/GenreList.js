@@ -76,7 +76,7 @@ const GenreContainer = ({data, navigation, colors, index}) => {
           data: '',
           episodeLink: false,
           url: data.link,
-          title:data.genre
+          title: data.genre,
         })
       }>
       <Text style={[styles.genreStyle, {color: colors.carouselCardText.title}]}>
@@ -98,13 +98,17 @@ const GenreList = ({navigation}) => {
   const {colors} = useTheme();
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar title="Genre List" navigation={navigation} showNavigation={false}/>
-      <Banner/>
+      <TopBar
+        title="Genre List"
+        navigation={navigation}
+        showNavigation={false}
+      />
+      <Banner />
       <View style={[styles.mainContainer, {height: dimension.height - 153}]}>
         {genreList ? (
           <FlatList
-          showsVerticalScrollIndicator={false}
-  showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
             data={genreList}
             renderItem={({item, index}) => (
               <GenreContainer
@@ -117,7 +121,9 @@ const GenreList = ({navigation}) => {
             keyExtractor={(item, index) => index}
             numColumns={2}
           />
-        ):<ActivityLoader/>}
+        ) : (
+          <ActivityLoader />
+        )}
       </View>
     </View>
   );

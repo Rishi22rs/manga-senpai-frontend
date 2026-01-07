@@ -1,17 +1,26 @@
-let searchTimeoutToken = 0;
+import cheerio from 'cheerio';
 
-export const searching = async (query = '') => {
-  let formData = new FormData();
-  formData.append('searchword', query);
-  clearInterval(searchTimeoutToken);
-  if (query.length >= 3) {
-    searchTimeoutToken = setTimeout(() => {
-      fetch('https://chap.mangairo.com/getsearchstory', {
-        method: 'post',
-        body: formData,
-      })
-        .then(res => res.text())
-        .then(text => {});
-    }, 500);
-  }
+export const searching = html => {
+  const $ = cheerio.load(html);
+
+  const results = [];
+
+  $('.item').each((_, el) => {
+    const titleEl = $(el).find('.d-cell.text a.title');
+
+    const name = titleEl.text().trim();
+    const link = titleEl.attr('href');
+
+    const image = $(el).find('.wrap_img img').attr('src');
+
+    const lastChapter = $(el).find('.chapter a').text().trim();
+
+    results.push({
+      name,
+      image,
+      lastChapter,
+      link,
+    });
+  });
+  return results;
 };

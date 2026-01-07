@@ -16,6 +16,7 @@ import {useTheme} from '@react-navigation/native';
 import {searching} from '../Scraping/searching';
 import cheerio from 'cheerio';
 import Banner from '../Ads/Banner';
+import {API} from '../Scraping/api';
 
 const dimension = Dimensions.get('window');
 
@@ -38,17 +39,19 @@ const Search = ({navigation, route}) => {
     setKeyword(e);
     if (e.length > 3) {
       let formData = new FormData();
-      formData.append('searchword', e);
+      formData.append('search_by', 'book_name'); // todo by author name also
+      formData.append('s', e);
       clearInterval(searchTimeoutToken);
       if (e.length >= 3) {
         searchTimeoutToken = setTimeout(() => {
-          fetch('https://chap.mangairo.com/getsearchstory', {
+          fetch(API, {
             method: 'post',
             body: formData,
           })
             .then(res => res.text())
             .then(text => {
-              setAnimeList(JSON.parse(text));
+              console.log('search text', text);
+              setAnimeList(searching(text));
               setIsLoading(false);
             });
         }, 500);
@@ -65,7 +68,7 @@ const Search = ({navigation, route}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar showNavigation={false}/>
+      <TopBar showNavigation={false} />
       <SearchBar
         placeholder="Start searching..."
         onChangeText={searchAnime}
@@ -87,27 +90,23 @@ const Search = ({navigation, route}) => {
         ref={searchRef}
         // onSubmitEditing={searchAnime}
       />
-      
+
       <View style={[styles.searchContainer]}>
-        {animeList ? (
+        {console.log('animeList', animeList)}
+        {!!animeList ? (
           <>
-            {animeList?.searchlist?.length > 0 ? (
+            {animeList?.length > 0 ? (
               <FlatList
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
                 style={{height: dimension.height - 165}}
-                data={animeList.searchlist}
+                data={animeList}
                 renderItem={({item}) => (
                   <AnimeCard
-                    // title={item.name}
-                    // banner={item.banner}
-                    // detail={item.releaseDate}
-                    // animeLink={item.animeLink}
-                    // navigation={navigation}
                     title={extractName(item.name)}
                     banner={item.image}
-                    detail={item.lastchapter}
-                    animeLink={item.story_link}
+                    detail={item.lastChapter}
+                    animeLink={item.link}
                     navigation={navigation}
                   />
                 )}
@@ -126,7 +125,6 @@ const Search = ({navigation, route}) => {
         ) : (
           isLoading && <ActivityLoader />
         )}
-       
       </View>
       {/* <View>
         <View>
@@ -153,13 +151,13 @@ const Search = ({navigation, route}) => {
 const styles = StyleSheet.create({
   container: {
     height: dimension.height,
-    alignItems:'center'
+    alignItems: 'center',
   },
   containerStyle: {
     borderBottomWidth: 0.5,
     // borderBottomColor: '#dbdbdb',
     borderTopWidth: 0,
-    width:'100%'
+    width: '100%',
   },
   searchHeight: {
     height: 20,

@@ -9,21 +9,28 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import AnimeCard from '../Components/AnimeCard';
-import {ThemePalette, selectedTheme} from '../Theme/ThemePalette';
 import TopBar from '../Components/TopBar';
 import {useTheme} from '@react-navigation/native';
 import {mangaListPages} from '../Scraping/mangaListPages';
 import Banner from '../Ads/Banner';
+import {API} from '../Scraping/api';
 
 const dimension = Dimensions.get('window');
 
-const EpisodeBtn = ({uniqueKey, episodeLink, colors, getData}) => {
+const EpisodeBtn = ({uniqueKey, link, colors, getData}) => {
   return (
-    <TouchableOpacity key={uniqueKey} onPress={() => getData(episodeLink)}>
+    <TouchableOpacity
+      onPress={() => {
+        console.log('link =', link);
+        getData(link);
+      }}>
       <Text
         style={[
           styles.epBtn,
-          {backgroundColor: colors.epBtn.background, color: colors.epBtn.color},
+          {
+            backgroundColor: colors.epBtn.background,
+            color: colors.epBtn.color,
+          },
         ]}>
         {uniqueKey}
       </Text>
@@ -37,18 +44,18 @@ const SeeAll = ({route, navigation}) => {
   useEffect(() => {
     route.params?.url && getData(route.params?.url);
   }, []);
-
+  console.log('route.params?.url', route.params?.url);
   const getData = url => {
     mangaListPages(url).then(res => {
       setData(res);
     });
   };
-  
+
   const range = (start, end) => {
-    return Array(end - start + 1)
-      .fill()
-      .map((_, idx) => start + idx);
+    return Array.from({length: data?.totalPages}, (_, i) => i + 1);
   };
+
+  console.log({data});
 
   return (
     <SafeAreaView
@@ -56,21 +63,22 @@ const SeeAll = ({route, navigation}) => {
       <TopBar title={route.params.title} navigation={navigation} />
       <Banner />
       {route.params?.url && data && (
-        <View style={{height:38}}>
+        <View style={{height: 38}}>
           <FlatList
+            horizontal
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
-            data={range(1, data[0].numOfPages)}
-            renderItem={({item, index}) => (
+            data={range(1, data?.totalPages)}
+            keyExtractor={item => item.toString()}
+            renderItem={({item}) => (
               <EpisodeBtn
                 colors={colors}
                 uniqueKey={item}
-                episodeLink={route.params?.url.slice(0, -1) + item}
+                link={`${API}/genre/${route.params.title.toLowerCase()}/page/${item}`}
                 getData={getData}
+                title={route.params.title}
               />
             )}
-            keyExtractor={(item, index) => index}
-            horizontal={true}
           />
         </View>
       )}
@@ -86,11 +94,11 @@ const SeeAll = ({route, navigation}) => {
           <FlatList
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
-            data={route.params?.url ? data : route.params.data}
+            data={route.params?.url ? data?.mangaList : route.params.data}
             renderItem={({item}) => (
               <AnimeCard
-                title={item.title}
-                banner={item.banner}
+                title={item.name}
+                banner={item.image}
                 detail={item.chapter_story_title}
                 animeLink={item.link}
                 navigation={navigation}
@@ -108,7 +116,7 @@ const SeeAll = ({route, navigation}) => {
 const styles = StyleSheet.create({
   container: {
     height: dimension.height,
-    alignItems:'center'
+    alignItems: 'center',
   },
   epBtn: {
     marginBottom: 10,
@@ -116,7 +124,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
     padding: 10,
     borderRadius: 15,
-    width: 40,
+    minWidth: 40,
     height: 38,
     textAlign: 'center',
   },
