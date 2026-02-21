@@ -1,4 +1,4 @@
-package com.underratedgames.mangasenpai.newarchitecture.components;
+package com.underratedgames.mangasenpaiv2.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

@@ -1,12 +1,33 @@
-import { View } from "react-native"
-import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads"
+import {useState} from 'react';
+import {View} from 'react-native';
+import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
 
-const Banner=()=>{
-return(
-    <View style={{display:"flex",alignItems:'center',marginBottom:10}}>
-            <BannerAd size={BannerAdSize.BANNER} unitId="ca-app-pub-1899986561877164/6006942551"/>
-            </View>
-)
-}
+const Banner = () => {
+  const [loaded, setLoaded] = useState(false);
 
-export default Banner
+  if (!loaded) {
+    return (
+      <BannerAd
+        unitId={
+          __DEV__ ? TestIds.BANNER : 'ca-app-pub-1899986561877164/3362381036'
+        }
+        size={BannerAdSize.BANNER}
+        onAdLoaded={() => setLoaded(true)}
+        onAdFailedToLoad={() => {}}
+      />
+    );
+  }
+
+  return (
+    <View style={{alignItems: 'center', marginVertical: 10}}>
+      <BannerAd
+        unitId={
+          __DEV__ ? TestIds.BANNER : 'ca-app-pub-1899986561877164/3362381036'
+        }
+        size={BannerAdSize.BANNER}
+      />
+    </View>
+  );
+};
+
+export default Banner;

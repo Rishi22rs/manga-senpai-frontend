@@ -1,4 +1,4 @@
-package com.underratedgames.mangasenpai.newarchitecture.modules;
+package com.underratedgames.mangasenpaiv2.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

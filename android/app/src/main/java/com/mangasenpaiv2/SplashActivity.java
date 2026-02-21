@@ -1,4 +1,4 @@
-package com.underratedgames.mangasenpai;
+package com.underratedgames.mangasenpaiv2;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;

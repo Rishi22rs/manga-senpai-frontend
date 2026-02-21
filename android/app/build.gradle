@@ -136,11 +136,11 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        applicationId "com.underratedgames.mangasenpai"
+        applicationId "com.underratedgames.mangasenpaiv2"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion 33
-        versionCode 22002
-        versionName "1.0.0"
+        targetSdkVersion 35
+        versionCode 22009
+        versionName "1.0.1"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
         resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
 
@@ -217,7 +217,7 @@ android {
             if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
                 storeFile file('mskey.keystore')
                 storePassword 'Hellomangasenpai@22'
-                keyAlias 'my-key-alias'
+                keyAlias 'key0'
                 keyPassword 'Hellomangasenpai@22'
             }
         }

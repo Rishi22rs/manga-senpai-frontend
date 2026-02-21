@@ -1,4 +1,4 @@
-package com.underratedgames.mangasenpai;
+package com.underratedgames.mangasenpaiv2;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
