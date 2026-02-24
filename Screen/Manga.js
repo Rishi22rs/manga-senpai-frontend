@@ -1,97 +1,156 @@
 import {useTheme} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
-import {
-  StyleSheet,
-  View,
-  Image,
-  FlatList,
-  Dimensions,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import React, {useEffect, useState, memo} from 'react';
+import {StyleSheet, View, Dimensions, FlatList} from 'react-native';
 import ActivityLoader from '../Components/ActivityLoader';
 import TopBar from '../Components/TopBar';
 import {mangaChapter} from '../Scraping/mangaChapter';
-import {Icon} from 'react-native-elements';
+import FastImage from 'react-native-fast-image';
 
 const dimensions = Dimensions.get('screen');
 
 const Manga = ({route, navigation}) => {
-  const [imgBase64, setImgBase64] = useState();
-  const [loadedCount, setLoadedCount] = useState(0);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
   const {colors} = useTheme();
 
   useEffect(() => {
-    mangaChapter(route.params.link).then(res => {
-      setImgBase64(res);
-      res.forEach(url => Image.prefetch(url));
-    });
-  }, []);
+    const loadChapter = async () => {
+      try {
+        const res = await mangaChapter(route.params.link);
 
-  const RenderMangaImage = ({item}) => {
-    const [loading, setLoading] = useState(true);
+        if (res && res.length > 0) {
+          setImages(res);
+
+          // 🔥 Strong preloading (better than Image.prefetch)
+          FastImage.preload(
+            res.map(url => ({
+              uri: url,
+              headers: {
+                Referer: 'https://mangakatana.com/',
+                'User-Agent': 'Mozilla/5.0',
+              },
+            })),
+          );
+        }
+      } catch (err) {
+        console.log('Chapter load error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChapter();
+  }, [route.params.link]);
+
+  const RenderMangaImage = memo(({item}) => {
+    const [progress, setProgress] = useState(0);
+    const [imgLoading, setImgLoading] = useState(true);
+
+    if (!item) return null;
+
+    const percentage = Math.floor(progress * 100);
 
     return (
-      <>
-        {item !== '' ? (
-          <View style={{backgroundColor: 'white'}}>
-            {loading && (
-              <View
-                style={{
-                  position: 'absolute',
-                  width: dimensions.width,
-                  height: dimensions.height,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  zIndex: 10,
-                }}>
-                <ActivityLoader title="Loading next page..." />
-              </View>
-            )}
-
-            <Image
-              resizeMode="contain"
-              source={{uri: item}}
-              style={{
-                width: dimensions.width,
-                height: dimensions.height,
-              }}
-              onLoadStart={() => setLoading(true)}
-              onLoadEnd={() => setLoading(false)}
-            />
+      <View style={styles.imageContainer}>
+        {imgLoading && (
+          <View style={styles.loaderContainer}>
+            <ActivityLoader title={`Loading ${percentage}%`} />
           </View>
-        ) : null}
-      </>
+        )}
+
+        <FastImage
+          style={styles.image}
+          resizeMode={FastImage.resizeMode.contain}
+          source={{
+            uri: item,
+            priority: FastImage.priority.high,
+            cache: FastImage.cacheControl.immutable,
+            headers: {
+              Referer: 'https://mangakatana.com/',
+              'User-Agent': 'Mozilla/5.0',
+            },
+          }}
+          onLoadStart={() => {
+            setImgLoading(true);
+            setProgress(0);
+          }}
+          onProgress={e => {
+            if (e.nativeEvent.total > 0) {
+              const p = e.nativeEvent.loaded / e.nativeEvent.total;
+              setProgress(p);
+            }
+          }}
+          onLoadEnd={() => {
+            setImgLoading(false);
+            setProgress(1);
+          }}
+        />
+      </View>
     );
-  };
+  });
+
+  if (loading) {
+    return (
+      <View style={[styles.container, {backgroundColor: colors.background}]}>
+        <TopBar showNavigation={true} navigation={navigation} />
+        <View style={styles.loaderWrapper}>
+          <ActivityLoader title="Loading Chapter..." />
+        </View>
+      </View>
+    );
+  }
 
   return (
-    <View>
-      {imgBase64 ? (
-        <>
-          <TopBar showNavigation={true} navigation={navigation} />
-          <FlatList
-            data={imgBase64}
-            renderItem={({item}) => <RenderMangaImage item={item} />}
-            keyExtractor={(item, index) => index.toString()}
-          />
-        </>
-      ) : (
-        <>
-          <TopBar navigation={navigation} />
-          <View
-            style={{
-              backgroundColor: colors.background,
-              height: dimensions.height,
-            }}>
-            <ActivityLoader title={`Loading`} />
-          </View>
-        </>
-      )}
+    <View style={styles.container}>
+      <TopBar showNavigation={true} navigation={navigation} />
+
+      <FlatList
+        data={images}
+        renderItem={({item}) => <RenderMangaImage item={item} />}
+        keyExtractor={(item, index) => index.toString()}
+        initialNumToRender={2} // 🚀 performance boost
+        maxToRenderPerBatch={2} // prevents lag on long chapters
+        windowSize={3} // keeps memory low
+        removeClippedSubviews={true} // huge performance gain
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+      />
     </View>
   );
 };
 
-const styles = StyleSheet.create({});
-
 export default Manga;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+  },
+  loaderScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  imageContainer: {
+    width: dimensions.width,
+    minHeight: dimensions.height,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black',
+  },
+  image: {
+    width: dimensions.width,
+    height: dimensions.height,
+  },
+  loaderContainer: {
+    position: 'absolute',
+    width: dimensions.width,
+    height: dimensions.height,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+});

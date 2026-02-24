@@ -14,7 +14,7 @@ import AnimeCard from '../Components/AnimeCard';
 import ActivityLoader from '../Components/ActivityLoader';
 import {useTheme} from '@react-navigation/native';
 import {searching} from '../Scraping/searching';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import Banner from '../Ads/Banner';
 import {API} from '../Scraping/api';
 

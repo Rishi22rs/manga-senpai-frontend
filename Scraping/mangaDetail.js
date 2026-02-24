@@ -1,4 +1,4 @@
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 export const mangaDetail = async url => {
   let tmp = {chapters: []};

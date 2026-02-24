@@ -206,7 +206,7 @@ Enjoy exploring manga, manhwa, and manhua!
               itemWidth={dimension.width}
             /> */}
 
-            <FlatList
+            {/* <FlatList
               showsVerticalScrollIndicator={false}
               showsHorizontalScrollIndicator={false}
               data={[
@@ -249,7 +249,7 @@ Enjoy exploring manga, manhwa, and manhua!
                 </TouchableOpacity>
               )}
               horizontal={true}
-            />
+            /> */}
 
             <View>
               <View style={styles.sectionTitleContainer}>

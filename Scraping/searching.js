@@ -1,4 +1,4 @@
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 export const searching = html => {
   const $ = cheerio.load(html);
