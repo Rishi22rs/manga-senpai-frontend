@@ -9,22 +9,17 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FastImage from 'react-native-fast-image';
-import {getStoredData, isDataPresent, storeData} from '../Hooks/localStorage';
+import LinearGradient from 'react-native-linear-gradient';
+import {isDataPresent, storeData} from '../Hooks/localStorage';
+import {interstitial} from '../Ads/Interstitial';
 
 const dimension = Dimensions.get('window');
+const CARD_WIDTH = dimension.width / 2.5;
 
-const AnimeCard = ({
-  title,
-  banner,
-  detail,
-  animeLink,
-  navigation,
-  episodeLink,
-}) => {
+const AnimeCard = ({title, banner, detail, animeLink, navigation}) => {
   const {colors} = useTheme();
   const [liked, setLiked] = useState(undefined);
 
-  // 🔥 FIX: run only once per card instead of every render
   useEffect(() => {
     const checkLiked = async () => {
       const res = await isDataPresent('liked', {
@@ -51,94 +46,148 @@ const AnimeCard = ({
     setLiked(!isPresent);
   };
 
-  // Prevent render until liked state is known (avoids flicker)
   if (liked === undefined) return null;
+
+  const handlePress = async () => {
+    try {
+      // If ad is already loaded → show it first
+      if (interstitial.loaded) {
+        interstitial.show();
+
+        // Navigate AFTER ad closes (best UX)
+        const unsubscribe = interstitial.addAdEventListener('closed', () => {
+          unsubscribe();
+          navigation.navigate('AnimeDetail', {animeLink});
+          // Preload next ad for future clicks
+          interstitial.load();
+        });
+      } else {
+        // Ad not loaded → navigate instantly (no delay)
+        navigation.navigate('AnimeDetail', {animeLink});
+        // Load ad in background for next time
+        interstitial.load();
+      }
+    } catch (e) {
+      console.log('Ad error:', e);
+      // Fallback safety navigation (never block user)
+      navigation.navigate('AnimeDetail', {animeLink});
+    }
+  };
 
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
+      activeOpacity={0.85}
       style={styles.container}
-      onPress={() => {
-        navigation.navigate('AnimeDetail', {animeLink});
-      }}>
+      onPress={handlePress}>
+      {/* 🔥 MODERN CARD */}
       <View
         style={[
-          styles.cardWrapper,
+          styles.card,
           {backgroundColor: colors['titleColor']['orange']},
         ]}>
-        {/* 🔥 FAST IMAGE (REPLACEMENT OF ImageBackground) */}
+        {/* Cover Image */}
         <FastImage
           source={{
             uri: banner,
             priority: FastImage.priority.high,
             cache: FastImage.cacheControl.immutable,
           }}
-          style={styles.cardImg}
-          resizeMode={FastImage.resizeMode.cover}>
-          {/* Heart Icon Overlay */}
-          <View style={styles.iconContainer}>
-            <Icon
-              onPress={toggleLike}
-              name={'cards-heart'}
-              size={28}
-              color={
-                liked
-                  ? colors?.titleColor?.orange || '#ff6b6b'
-                  : 'rgba(255,255,255,0.9)'
-              }
-            />
-          </View>
-        </FastImage>
+          style={styles.image}
+          resizeMode={FastImage.resizeMode.cover}
+        />
+
+        {/* 🔥 Bottom Gradient (modern look + readability) */}
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.8)']}
+          style={styles.gradient}
+          pointerEvents="none"
+        />
+
+        {/* ❤️ Floating Like Button */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={toggleLike}
+          style={[styles.likeBtn, {backgroundColor: colors.card}]}>
+          <Icon
+            name={liked ? 'cards-heart' : 'cards-heart-outline'}
+            size={22}
+            color={liked ? colors.titleColor.orange : colors.animeCard.subText}
+          />
+        </TouchableOpacity>
+
+        {/* 🔥 Overlay Title (Premium UI) */}
+        <View style={styles.overlayText}>
+          <Text numberOfLines={2} style={[styles.title, {color: '#fff'}]}>
+            {title}
+          </Text>
+        </View>
       </View>
 
-      <Text
-        numberOfLines={2}
-        style={[styles.animeTitle, {color: colors?.animeCard?.title}]}>
-        {title}
-      </Text>
-
-      <Text
-        numberOfLines={1}
-        style={[styles.subText, {color: colors?.animeCard?.subText}]}>
-        {detail}
-      </Text>
+      {/* Subtitle / Chapter */}
+      {!!detail && (
+        <Text
+          numberOfLines={1}
+          style={[styles.detail, {color: colors.animeCard.subText}]}>
+          {detail}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
 
-// 🔥 MEMO = HUGE performance boost in FlatList
 export default memo(AnimeCard);
 
 const styles = StyleSheet.create({
   container: {
-    padding: 0,
     marginHorizontal: 10,
-    marginTop: 12,
-    alignItems: 'center',
+    marginTop: 14,
+    width: CARD_WIDTH,
   },
-  cardWrapper: {
-    borderRadius: 15,
+
+  card: {
+    borderRadius: 18,
     overflow: 'hidden',
+    elevation: 6, // Android shadow
   },
-  cardImg: {
-    height: 200,
-    width: dimension.width / 2.5,
-    justifyContent: 'flex-start',
+
+  image: {
+    height: 210,
+    width: '100%',
   },
-  iconContainer: {
-    alignItems: 'flex-end',
+
+  gradient: {
+    position: 'absolute',
+    bottom: 0,
+    height: 90,
+    width: '100%',
+  },
+
+  likeBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    borderRadius: 20,
     padding: 6,
+    elevation: 4,
   },
-  animeTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    width: dimension.width / 2.5,
-    marginTop: 6,
+
+  overlayText: {
+    position: 'absolute',
+    bottom: 8,
+    left: 10,
+    right: 10,
   },
-  subText: {
-    fontWeight: '600',
-    marginTop: 2,
-    width: dimension.width / 2.5,
+
+  title: {
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+
+  detail: {
     fontSize: 12,
+    fontWeight: '600',
+    marginTop: 6,
+    paddingHorizontal: 4,
   },
 });

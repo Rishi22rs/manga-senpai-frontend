@@ -8,6 +8,7 @@ import {useTheme} from '@react-navigation/native';
 import {searching} from '../Scraping/searching';
 import * as cheerio from 'cheerio';
 import {API} from '../Scraping/api';
+import Banner from '../Ads/Banner';
 
 const dimension = Dimensions.get('window');
 
@@ -105,7 +106,7 @@ const Search = ({navigation}) => {
           {backgroundColor: colors.background},
         ]}
       />
-
+      <Banner />
       <View style={styles.searchContainer}>
         {isLoading ? (
           <ActivityLoader title="Searching..." />

@@ -1,426 +1,228 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Text,
   StyleSheet,
-  ScrollView,
-  FlatList,
   Dimensions,
   SafeAreaView,
   View,
   TouchableOpacity,
+  FlatList,
   Alert,
 } from 'react-native';
 import {homePage} from '../Scraping/homePage';
-import CarouselCard from '../Components/CarouselCard';
 import AnimeCard from '../Components/AnimeCard';
 import TopBar from '../Components/TopBar';
 import ActivityLoader from '../Components/ActivityLoader';
 import {useFocusEffect, useTheme} from '@react-navigation/native';
-import {mangaListPages} from '../Scraping/mangaListPages';
-import Icon from 'react-native-vector-icons/Fontisto';
-import {getOtherData, storeOtherData} from '../Theme/ThemePalette';
-import mobileAds, {
-  BannerAd,
-  BannerAdSize,
-  TestIds,
-  AppOpenAd,
-  AdEventType,
-} from 'react-native-google-mobile-ads';
 import Banner from '../Ads/Banner';
-import {interstitial} from '../Ads/Interstitial';
-import {isDataPresent, storeData} from '../Hooks/localStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const dimension = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 const Home = ({navigation}) => {
   const {colors} = useTheme();
-  const carouselRef = useRef();
-
-  const [homePageData, setHomePageData] = useState();
-
-  const [showBanner, setShowBanner] = useState(true);
-  const [loaded, setLoaded] = useState(false);
-
-  const showAlert = () => {
-    const message = `
-This app is completely FREE and still under active development.
-You may notice a few bugs or unexpected behavior at times.
-
-I’m actively working on improving performance, fixing issues, and making the app more stable with every update 🚀
-
-Thank you for your patience and support ❤️
-Enjoy exploring manga, manhwa, and manhua!
-`;
-
-    Alert.alert('Still Cooking 👨‍🍳', message, [{text: 'Let’s Go'}]);
-  };
+  const [homePageData, setHomePageData] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     checkAndShowAlert();
   }, []);
 
   const checkAndShowAlert = async () => {
-    try {
-      const alertShown = await AsyncStorage.getItem('alertShown');
-      if (alertShown === null) {
-        // Alert has not been shown yet
-        showAlert();
-        await AsyncStorage.setItem('alertShown', 'true');
-      }
-    } catch (error) {
-      console.error('Error checking or setting alert flag:', error);
+    const alertShown = await AsyncStorage.getItem('alertShown');
+    if (alertShown === null) {
+      setShowWelcome(true);
+      await AsyncStorage.setItem('alertShown', 'true');
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      const unsubscribe = interstitial.addAdEventListener(
-        AdEventType.LOADED,
-        () => {
-          setLoaded(true);
-        },
-      );
-
-      // Start loading the interstitial straight away
-      interstitial.load();
-
-      getOtherData('@showBanner').then(res => {
-        res == 'true' ? setShowBanner(true) : setShowBanner(false);
-      });
       homePage().then(res => {
         setHomePageData(res);
       });
-      // Unsubscribe from events on unmount
-      return unsubscribe;
     }, []),
   );
 
-  const hideBanner = () => {
-    storeOtherData('@showBanner', 'false');
-    setShowBanner(false);
+  const renderSection = (title, data) => {
+    if (!data || data.length === 0) return null;
+
+    return (
+      <View style={styles.sectionWrapper}>
+        {/* Section Header */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, {color: colors.animeCard.title}]}>
+            {title}
+          </Text>
+        </View>
+
+        {/* Horizontal List */}
+        <FlatList
+          data={data}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(_, index) => index.toString()}
+          contentContainerStyle={{paddingHorizontal: 10}}
+          renderItem={({item}) => (
+            <AnimeCard
+              title={item.title}
+              banner={item.banner}
+              detail={
+                item.chapter_story_title || item.releaseDate || item.chapter
+              }
+              animeLink={item.link}
+              navigation={navigation}
+            />
+          )}
+        />
+      </View>
+    );
   };
+
+  if (!homePageData) {
+    return (
+      <SafeAreaView
+        style={[styles.container, {backgroundColor: colors.background}]}>
+        <TopBar showNavigation={false} />
+
+        <View style={styles.loaderWrapper}>
+          <ActivityLoader title="Loading Manga..." />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: colors.background}]}>
       <TopBar showNavigation={false} />
-      <Banner />
-      {showBanner && (
-        <View
-          style={{
-            position: 'absolute',
-            zIndex: 1000,
-            height: '100%',
-            width: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View
-            style={{
-              zIndex: 1001,
-              backgroundColor: colors.background,
-              height: dimension.height - 400,
-              width: dimension.width - 100,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 20,
-            }}>
+
+      <FlatList
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+            <View style={styles.spacer} />
+
+            <Banner />
+
+            {renderSection('🔥 Monthly Trending', homePageData.monthlyTrending)}
+
+            <Banner />
+
+            {renderSection('⚡ Recently Updated', homePageData.recentlyUpdated)}
+
+            <Banner />
+
+            {renderSection('🆕 New Manga', homePageData.newManga)}
+
+            <Banner />
+
+            <View style={{height: 80}} />
+          </>
+        }
+        data={[]}
+        renderItem={null}
+      />
+
+      {/* 🔥 MODERN WELCOME MODAL */}
+      {showWelcome && (
+        <View style={styles.overlay}>
+          <View style={[styles.welcomeCard, {backgroundColor: colors.card}]}>
             <Text
-              style={{
-                fontSize: 30,
-                fontWeight: 'bold',
-                color: colors['animeCard']['title'],
-              }}>
-              Welcome
+              style={[styles.welcomeTitle, {color: colors.animeCard.title}]}>
+              Welcome 👋
             </Text>
+
             <Text
-              style={{
-                margin: 30,
-                fontSize: 17,
-                color: colors['animeCard']['title'],
-              }}>
-              Welcome to Manga Senpai. It's a place to read all kinds of Manga,
-              Manhua and Manhwa. It is free to use and always will be.
+              style={[styles.welcomeText, {color: colors.animeCard.subText}]}>
+              Welcome to Manga Senpai. Read Manga, Manhwa & Manhua for FREE. App
+              is under active development 🚀
             </Text>
-            <TouchableOpacity style={{marginTop: 20}} onPress={hideBanner}>
-              <Text
-                style={{
-                  textDecorationLine: 'underline',
-                  fontSize: 15,
-                  color: colors['animeCard']['title'],
-                }}>
-                Close
-              </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.startBtn,
+                {backgroundColor: colors.titleColor.orange},
+              ]}
+              onPress={() => setShowWelcome(false)}>
+              <Text style={{color: '#fff', fontWeight: '800'}}>Let’s Go</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
-      <ScrollView>
-        {homePageData && (
-          <>
-            {/* <View style={[styles.sectionTitleContainer, {marginBottom: 10}]}>
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  {color: colors['animeCard']['title']},
-                ]}>
-                Monthly Trending
-              </Text>
-              <Text
-                onPress={() =>
-                  navigation.navigate('SeeAll', {
-                    data: homePageData.monthlyTrending,
-                    episodeLink: true,
-                  })
-                }
-                style={[
-                  styles.seeAll,
-                  {color: colors['titleColor']['orange']},
-                ]}>
-                See all
-              </Text>
-            </View> */}
-            {/* <Carousel
-              loop={true}
-              ref={carouselRef}
-              layout={'stack'}
-              autoplay={true}
-              data={homePageData.monthlyTrending}
-              renderItem={({item, index}) => {
-                return (
-                  <CarouselCard
-                    title={item.title}
-                    banner={item.banner}
-                    detail={item.chapter_story_title}
-                    animeLink={item.link}
-                    chapterStoryLink={item.chapter_story_link}
-                    navigation={navigation}
-                  />
-                );
-              }}
-              sliderWidth={dimension.width}
-              itemWidth={dimension.width}
-            /> */}
-
-            {/* <FlatList
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              data={[
-                {
-                  title: 'Manhua',
-                  link: 'https://h.mangairo.com/manga-list/type-topview/ctg-44/state-all/page-1',
-                },
-                {
-                  title: 'Manhwa',
-                  link: 'https://h.mangairo.com/manga-list/type-topview/ctg-43/state-all/page-1',
-                },
-                {
-                  title: 'Hot Manga',
-                  link: 'https://h.mangairo.com/manga-list/type-topview/ctg-all/state-all/page-1',
-                },
-                {
-                  title: 'Latest Manga',
-                  link: 'https://h.mangairo.com/manga-list/type-latest/ctg-all/state-all/page-1',
-                },
-                {
-                  title: 'Completed Manga',
-                  link: 'https://h.mangairo.com/manga-list/type-topview/ctg-all/state-completed/page-1',
-                },
-              ]}
-              renderItem={({item}) => (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('SeeAll', {
-                      data: homePageData.monthlyTrending,
-                      episodeLink: false,
-                      url: item.link,
-                    })
-                  }
-                  activeOpacity={0.5}
-                  style={[
-                    styles.tab,
-                    {backgroundColor: colors.titleColor.orange},
-                  ]}>
-                  <Text style={{fontWeight: 'bold'}}>{item.title}</Text>
-                </TouchableOpacity>
-              )}
-              horizontal={true}
-            /> */}
-
-            <View>
-              <View style={styles.sectionTitleContainer}>
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    {color: colors['animeCard']['title']},
-                  ]}>
-                  Monthly Trending
-                </Text>
-                {/* <Text
-                  onPress={() =>
-                    navigation.navigate('SeeAll', {
-                      data: homePageData.monthlyTrending,
-                      title: 'Monthly Trending',
-                      episodeLink: false,
-                    })
-                  }
-                  style={[
-                    styles.seeAll,
-                    {marginTop: 2, color: colors['titleColor']['orange']},
-                  ]}>
-                  See all
-                </Text> */}
-              </View>
-
-              <FlatList
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                data={homePageData.monthlyTrending}
-                renderItem={({item}) => (
-                  <AnimeCard
-                    title={item.title}
-                    banner={item.banner}
-                    animeLink={item.link}
-                    navigation={navigation}
-                    detail={item.chapter_story_title}
-                  />
-                )}
-                horizontal={true}
-              />
-            </View>
-            <Banner />
-            <View>
-              <View style={styles.sectionTitleContainer}>
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    {color: colors['animeCard']['title']},
-                  ]}>
-                  Recently Updated
-                </Text>
-                {/* <Text
-                  onPress={() =>
-                    navigation.navigate('SeeAll', {
-                      data: homePageData.recentlyUpdated,
-                      title: 'Recenty Updated',
-                      episodeLink: false,
-                    })
-                  }
-                  style={[
-                    styles.seeAll,
-                    {marginTop: 2, color: colors['titleColor']['orange']},
-                  ]}>
-                  See all
-                </Text> */}
-              </View>
-
-              <FlatList
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                data={homePageData.recentlyUpdated}
-                renderItem={({item}) => (
-                  <AnimeCard
-                    title={item.title}
-                    banner={item.banner}
-                    detail={item.releaseDate}
-                    animeLink={item.link}
-                    navigation={navigation}
-                  />
-                )}
-                horizontal={true}
-              />
-            </View>
-            <Banner />
-            <View>
-              <View style={styles.sectionTitleContainer}>
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    {color: colors['animeCard']['title']},
-                  ]}>
-                  New Manga
-                </Text>
-                {/* <Text
-                  onPress={() =>
-                    navigation.navigate('SeeAll', {
-                      data: homePageData.newManga,
-                      title: 'New Manga',
-                      episodeLink: false,
-                    })
-                  }
-                  style={[
-                    styles.seeAll,
-                    {marginTop: 2, color: colors['titleColor']['orange']},
-                  ]}>
-                  See all
-                </Text> */}
-              </View>
-
-              <FlatList
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                data={homePageData.newManga}
-                renderItem={({item}) => (
-                  <AnimeCard
-                    title={item.title}
-                    banner={item.banner}
-                    detail={item.chapter_story_title}
-                    animeLink={item.link}
-                    navigation={navigation}
-                  />
-                )}
-                horizontal={true}
-              />
-            </View>
-          </>
-        )}
-        {/* {homePageData && ( */}
-
-        {/* )} */}
-        {homePageData === undefined && (
-          <ActivityLoader
-            title={`Loading...${'\n'}It may take few seconds.!!!`}
-          />
-        )}
-        <View style={{height: 70}}></View>
-      </ScrollView>
     </SafeAreaView>
   );
 };
 
+export default Home;
+
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    height: dimension.height,
+    flex: 1,
   },
-  seeAll: {
-    textAlign: 'right',
-    alignSelf: 'stretch',
-    paddingRight: 40,
+  loaderContainer: {
+    flex: 1,
+  },
+
+  // 🔥 HERO UI (Modern)
+  heroCard: {
+    margin: 16,
+    padding: 20,
+    borderRadius: 24,
+    elevation: 6,
+  },
+  heroTitle: {
+    fontSize: 26,
+    fontWeight: '900',
+    marginBottom: 5,
+  },
+  heroSubtitle: {
+    fontSize: 14,
+    opacity: 0.8,
+  },
+
+  // Sections
+  sectionWrapper: {
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  sectionHeader: {
+    paddingHorizontal: 20,
     marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
   },
-  sectionTitleContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    marginBottom: 0,
-    paddingLeft: 20,
-    marginTop: 15,
-    justifyContent: 'space-between',
+
+  // Welcome Modal (Modern Glass Look)
+  overlay: {
+    position: 'absolute',
+    height: '100%',
+    width: '100%',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  tab: {
-    padding: 10,
-    margin: 5,
+  welcomeCard: {
+    width: width - 60,
+    borderRadius: 24,
+    padding: 25,
+    alignItems: 'center',
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    marginBottom: 10,
+  },
+  welcomeText: {
+    textAlign: 'center',
+    fontSize: 15,
+    marginBottom: 20,
+  },
+  startBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 30,
     borderRadius: 20,
-    marginTop: 20,
   },
 });
-
-export default Home;

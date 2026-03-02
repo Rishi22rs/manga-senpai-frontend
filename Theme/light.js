@@ -1,32 +1,38 @@
 const light = {
   dark: false,
   colors: {
-    primary: 'red',
-    card: 'white',
-    text: 'red',
-    border: 'white',
-    notification: 'black',
-    background: 'white',
+    primary: '#FF6B35', // modern accent
+    card: '#FFFFFF',
+    text: '#1A1A1A',
+    border: '#F0F0F0',
+    notification: '#000000',
+    background: '#FAFAFA',
+
     titleColor: {
-      orange: '#E5A168',
-      grey: '#777675',
+      orange: '#FF6B35', // stronger CTA color
+      grey: '#6B7280', // modern grey
     },
+
     carouselCardText: {
-      title: 'white',
+      title: '#FFFFFF',
     },
+
     animeCard: {
-      title: '#777675',
-      subText: '#7F7F7F',
+      title: '#111827', // darker readable title
+      subText: '#6B7280', // soft modern grey
     },
+
     animedetail: {
-      title: '#777675',
-      detail: 'black',
+      title: '#111827', // strong title
+      detail: '#374151', // better readability
     },
-    genreBackgroundInDetail: '#E9E9E9',
-    genreTextColor: 'black',
+
+    genreBackgroundInDetail: '#F3F4F6', // soft chip bg
+    genreTextColor: '#111827',
+
     epBtn: {
-      background: '#376C96',
-      color: 'white',
+      background: '#FF6B35', // premium CTA
+      color: '#FFFFFF',
     },
   },
 };

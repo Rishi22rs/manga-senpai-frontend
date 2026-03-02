@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   View,
   FlatList,
@@ -14,120 +14,174 @@ import {useTheme} from '@react-navigation/native';
 import {mangaListPages} from '../Scraping/mangaListPages';
 import Banner from '../Ads/Banner';
 import {API} from '../Scraping/api';
+import ActivityLoader from '../Components/ActivityLoader';
 
-const dimension = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
-const EpisodeBtn = ({uniqueKey, link, colors, getData}) => {
+const EpisodeBtn = React.memo(({page, link, colors, getData, active}) => {
   return (
     <TouchableOpacity
-      onPress={() => {
-        console.log('link =', link);
-        getData(link);
-      }}>
+      activeOpacity={0.8}
+      onPress={() => getData(link)}
+      style={[
+        styles.pageBtn,
+        {
+          backgroundColor: active
+            ? colors.titleColor.orange
+            : colors.genreBackgroundInDetail,
+        },
+      ]}>
       <Text
-        style={[
-          styles.epBtn,
-          {
-            backgroundColor: colors.epBtn.background,
-            color: colors.epBtn.color,
-          },
-        ]}>
-        {uniqueKey}
+        style={{
+          color: active ? colors.epBtn.color : colors.genreTextColor,
+          fontWeight: '700',
+        }}>
+        {page}
       </Text>
     </TouchableOpacity>
   );
-};
+});
 
 const SeeAll = ({route, navigation}) => {
   const {colors} = useTheme();
-  const [data, setData] = useState();
-  useEffect(() => {
-    route.params?.url && getData(route.params?.url);
-  }, []);
-  console.log('route.params?.url', route.params?.url);
-  const getData = url => {
-    mangaListPages(url).then(res => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const url = route.params?.url;
+
+  const getData = useCallback(async link => {
+    try {
+      setLoading(true);
+      const res = await mangaListPages(link);
       setData(res);
-    });
-  };
+    } catch (e) {
+      console.log('Pagination error:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const range = (start, end) => {
-    return Array.from({length: data?.totalPages}, (_, i) => i + 1);
-  };
+  useEffect(() => {
+    if (url) {
+      getData(url);
+    }
+  }, [url, getData]);
 
-  console.log({data});
+  const pages = data?.totalPages
+    ? Array.from({length: data.totalPages}, (_, i) => i + 1)
+    : [];
 
   return (
     <SafeAreaView
-      style={[styles.container, {backgroundColor: colors?.['background']}]}>
+      style={[styles.container, {backgroundColor: colors.background}]}>
+      {/* 🔥 FIXED HEADER */}
       <TopBar title={route.params.title} navigation={navigation} />
+
       <Banner />
-      {route.params?.url && data && (
-        <View style={{height: 38}}>
+
+      {/* 🔥 MODERN PAGINATION (Sticky Horizontal Pills) */}
+      {url && data && (
+        <View style={styles.paginationWrapper}>
           <FlatList
             horizontal
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            data={range(1, data?.totalPages)}
+            data={pages}
             keyExtractor={item => item.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.paginationContent}
             renderItem={({item}) => (
               <EpisodeBtn
+                page={item}
                 colors={colors}
-                uniqueKey={item}
+                active={currentPage === item}
                 link={`${API}/genre/${route.params.title.toLowerCase()}/page/${item}`}
-                getData={getData}
-                title={route.params.title}
+                getData={link => {
+                  setCurrentPage(item);
+                  getData(link);
+                }}
               />
             )}
           />
         </View>
       )}
-      {data && (
-        <View
-          style={{
-            paddingBottom: 60,
-            marginLeft: 5,
-            height: route.params?.url
-              ? dimension.height - 120
-              : dimension.height - 80,
-          }}>
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            data={route.params?.url ? data?.mangaList : route.params.data}
-            renderItem={({item}) => (
-              <AnimeCard
-                title={item.name}
-                banner={item.image}
-                detail={item.chapter_story_title}
-                animeLink={item.link}
-                navigation={navigation}
-                episodeLink={route.params.episodeLink}
-              />
-            )}
-            numColumns={2}
-          />
+
+      {/* 🔥 CONTENT AREA (NO HEIGHT HACKS) */}
+      {loading ? (
+        <View style={styles.loaderContainer}>
+          <ActivityLoader title="Loading Manga..." />
         </View>
+      ) : (
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={url ? data?.mangaList : route.params.data}
+          keyExtractor={(item, index) => `${item.link}-${index}`}
+          numColumns={2}
+          contentContainerStyle={styles.gridContent}
+          columnWrapperStyle={styles.row}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={7}
+          removeClippedSubviews={true}
+          ListFooterComponent={<View style={{height: 80}} />}
+          renderItem={({item}) => (
+            <AnimeCard
+              title={item.name || item.title}
+              banner={item.image || item.banner}
+              detail={
+                item.chapter_story_title || item.releaseDate || item.chapter
+              }
+              animeLink={item.link}
+              navigation={navigation}
+              episodeLink={route.params.episodeLink}
+            />
+          )}
+        />
       )}
     </SafeAreaView>
   );
 };
 
+export default SeeAll;
+
 const styles = StyleSheet.create({
   container: {
-    height: dimension.height,
+    flex: 1, // 🔥 IMPORTANT: fixes scroll + header centering
+  },
+
+  // 🔥 Modern Pagination Bar
+  paginationWrapper: {
+    height: 70,
+    justifyContent: 'center',
+    paddingVertical: 10,
+  },
+  paginationContent: {
+    paddingHorizontal: 10,
+  },
+  pageBtn: {
+    marginHorizontal: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
+    minWidth: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+  },
+
+  // 🔥 Grid Layout (Modern spacing)
+  gridContent: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 20,
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+
+  // Loader (centered body only, header stays top)
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  epBtn: {
-    marginBottom: 10,
-    marginLeft: 5,
-    marginRight: 5,
-    padding: 10,
-    borderRadius: 15,
-    minWidth: 40,
-    height: 38,
-    textAlign: 'center',
-  },
 });
-
-export default SeeAll;

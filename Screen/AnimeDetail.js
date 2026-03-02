@@ -1,210 +1,278 @@
-import {useTheme} from '@react-navigation/native';
+import {useNavigation, useTheme} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {
   View,
-  Image,
   Text,
   StyleSheet,
-  ScrollView,
   Dimensions,
   TouchableOpacity,
-  ImageBackground,
-  FlatList,
-  Button,
+  ScrollView,
+  StatusBar,
+  Pressable,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
+import LinearGradient from 'react-native-linear-gradient';
 import ActivityLoader from '../Components/ActivityLoader';
-import TopBar from '../Components/TopBar';
 import {Icon} from 'react-native-elements';
-import {setData} from '../Hooks/localStorage';
-import {genrePage} from '../Scraping/genrePage';
 import {mangaDetail} from '../Scraping/mangaDetail';
 
-const dimension = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
 
-const AnimeDetail = ({route, navigation}) => {
+const AnimeDetail = ({route}) => {
   const {colors} = useTheme();
-
-  const [mangaDetailData, setMangaDetailData] = useState();
-
-  console.log(JSON.stringify(route));
+  const [data, setData] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     mangaDetail(route.params.animeLink).then(res => {
-      setMangaDetailData(res);
+      setData(res);
     });
-  }, []);
+  }, [route.params.animeLink]);
+
+  if (!data) {
+    return (
+      <View style={[styles.loader, {backgroundColor: colors.background}]}>
+        <ActivityLoader title="Loading Manga..." />
+      </View>
+    );
+  }
 
   return (
-    <View>
-      {mangaDetailData ? (
-        <>
-          <ImageBackground
-            source={{uri: mangaDetailData.banner}}
-            style={styles.banner}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={{zIndex: 99}}
-              onPress={() => navigation.goBack()}>
-              <Icon
-                raised={
-                  colors.carouselCardText.title === 'white' ? true : false
-                }
-                reverse={
-                  colors.carouselCardText.title === 'white' ? false : true
-                }
-                name="arrow-back"
-                type="material"
-                color={'black'}
-              />
-            </TouchableOpacity>
-          </ImageBackground>
-          <ScrollView style={styles.container} nestedScrollEnabled={true}>
-            <View style={{height: 380}}></View>
+    <View style={[styles.container, {backgroundColor: colors.background}]}>
+      <StatusBar barStyle="light-content" />
+      {/* Banner */}
+      <View
+        style={[
+          styles.bannerWrapper,
+          {backgroundColor: colors['titleColor']['orange']},
+        ]}>
+        <FastImage
+          source={{
+            uri: data.banner,
+            priority: FastImage.priority.high,
+            cache: FastImage.cacheControl.immutable,
+            headers: {
+              Referer: 'https://mangakatana.com/',
+              'User-Agent': 'Mozilla/5.0',
+            },
+          }}
+          style={styles.banner}
+          resizeMode={FastImage.resizeMode.cover}
+        />
 
-            <View style={[styles.detail, {backgroundColor: colors.background}]}>
-              <Text style={[styles.title, {color: colors.animeCard['title']}]}>
-                {mangaDetailData.title}
-              </Text>
+        {/* Gradient overlay */}
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.8)']}
+          style={styles.gradient}
+          pointerEvents="none"
+        />
+      </View>
+      {/* 🔥 SINGLE ScrollView (IMPORTANT) */}
+      {/* Back Button */}
+      <Pressable
+        style={[styles.backButton, {backgroundColor: colors.card}]}
+        onPress={() => {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.navigate('Home'); // or your main screen
+          }
+        }}>
+        <Icon name="arrow-back" type="material" color={colors.text} />
+      </Pressable>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        contentContainerStyle={{paddingBottom: 40}}>
+        {/* Content Card */}
+        <View
+          style={{paddingTop: Dimensions.get('screen').height / 2.8}}></View>
+        <View style={[styles.contentCard, {backgroundColor: colors.card}]}>
+          {/* Title */}
+          <Text style={[styles.title, {color: colors.animedetail.title}]}>
+            {data.title}
+          </Text>
+
+          {/* Status Badge */}
+          {!!data.status?.trim() ? (
+            <View
+              style={[
+                styles.statusBadge,
+                {backgroundColor: colors.titleColor.orange},
+              ]}>
               <Text
-                style={[styles.subTitle, {color: colors.animeCard['title']}]}>
-                {mangaDetailData['status'].trim()}
+                style={{
+                  color: colors.epBtn.color,
+                  fontWeight: '700',
+                }}>
+                {data.status?.trim()}
               </Text>
-              <View>
-                {mangaDetailData.hasOwnProperty('alt_name') &&
-                  mangaDetailData['alt_name'].map((x, key) => (
-                    <Text
-                      key={key}
-                      style={{
-                        marginBottom: 15,
-                        textAlign: 'center',
-                        color: colors.animeCard['title'],
-                      }}>
-                      {'● '}
-                      {x.trim()}
-                    </Text>
-                  ))}
-              </View>
-              <View style={styles.genreContainer}>
-                {mangaDetailData['genres'].map((x, key) => (
-                  <View
-                    key={key}
-                    // onPress={() =>
-                    //   navigation.navigate('GenreAnimeList', {genre: x.trim()})
-                    // }
-                  >
-                    <Text
-                      style={[
-                        styles.genre,
-                        {
-                          backgroundColor: colors.genreBackgroundInDetail,
-                          color: colors.genreTextColor,
-                        },
-                      ]}
-                      key={key}>
-                      {x.trim()}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-              <View style={{marginBottom: 15, marginTop: 15}}>
-                <Button
-                  color={colors.titleColor.orange}
-                  title="Start Reading"
-                  onPress={() =>
-                    navigation.navigate('AnimeEpisodeList', {
-                      episodeList: mangaDetailData.chapters,
-                      name: mangaDetailData.title,
-                    })
-                  }
-                />
-              </View>
-              <ScrollView nestedScrollEnabled={true}>
-                <Text
-                  style={[
-                    styles.summaryText,
-                    {color: colors.animedetail.detail},
-                  ]}>
-                  {mangaDetailData['summary'].trim()}
-                </Text>
-              </ScrollView>
             </View>
-          </ScrollView>
-        </>
-      ) : (
-        <>
-          <TopBar navigation={navigation} />
-          <View
-            style={{
-              backgroundColor: colors.background,
-              height: dimension.height,
-            }}>
-            <ActivityLoader />
+          ) : null}
+
+          {/* Alt Names */}
+          {data?.alt_name?.length > 0 && (
+            <View style={styles.altContainer}>
+              {data.alt_name.map((name, index) => (
+                <Text
+                  key={index}
+                  style={[styles.altName, {color: colors.animeCard.subText}]}>
+                  {name.trim()}
+                </Text>
+              ))}
+            </View>
+          )}
+
+          {/* Genres */}
+          <View style={styles.genreContainer}>
+            {data.genres?.map((genre, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.genrePill,
+                  {
+                    backgroundColor: colors.genreBackgroundInDetail,
+                  },
+                ]}>
+                <Text
+                  style={{
+                    color: colors.genreTextColor,
+                    fontWeight: '600',
+                  }}>
+                  {genre.trim()}
+                </Text>
+              </View>
+            ))}
           </View>
-        </>
-      )}
+
+          {/* Start Reading Button */}
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={[
+              styles.readButton,
+              {backgroundColor: colors.epBtn.background},
+            ]}
+            onPress={() =>
+              navigation.navigate('AnimeEpisodeList', {
+                episodeList: data.chapters,
+                name: data.title,
+              })
+            }>
+            <Text style={[styles.readText, {color: colors.epBtn.color}]}>
+              📖 Start Reading
+            </Text>
+          </TouchableOpacity>
+
+          {/* Summary Title */}
+          <Text
+            style={[styles.sectionTitle, {color: colors.animedetail.title}]}>
+            Summary
+          </Text>
+
+          {/* Summary Text */}
+          <Text style={[styles.summary, {color: colors.animedetail.detail}]}>
+            {data.summary?.trim()}
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 };
 
+export default AnimeDetail;
+
 const styles = StyleSheet.create({
-  banner: {
-    height: 400,
-    width: dimension.width,
+  container: {
+    flex: 1,
+  },
+  bannerWrapper: {
+    height: height * 0.45,
+    width: width,
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
   },
-  detail: {
+  banner: {
+    height: '100%',
+    width: '100%',
+  },
+  gradient: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    borderRadius: 20,
+    padding: 8,
+    elevation: 5,
+    zIndex: 10,
+  },
+  contentCard: {
+    marginTop: -40,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     padding: 20,
-    borderRadius: 30,
-    alignItems: 'center',
-    height: dimension.height,
-  },
-  epContainer: {
-    height: 80,
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '900',
-    marginBottom: 5,
-  },
-  subTitle: {
-    fontSize: 15,
+    textAlign: 'center',
     marginBottom: 10,
+  },
+  statusBadge: {
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 15,
+  },
+  altContainer: {
+    marginBottom: 15,
+  },
+  altName: {
+    textAlign: 'center',
+    fontSize: 13,
+    marginBottom: 3,
   },
   genreContainer: {
-    display: 'flex',
     flexDirection: 'row',
-    marginBottom: 3,
     flexWrap: 'wrap',
     justifyContent: 'center',
+    marginVertical: 10,
+  },
+  genrePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    margin: 4,
+  },
+  readButton: {
+    marginTop: 20,
+    marginBottom: 25,
+    paddingVertical: 14,
+    borderRadius: 25,
+    alignItems: 'center',
+    elevation: 4,
+  },
+  readText: {
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
     marginBottom: 10,
   },
-  genre: {
-    padding: 5,
-    borderRadius: 15,
-    margin: 3,
-  },
-  epBtn: {
-    margin: 10,
-    padding: 10,
-    paddingRight: 15,
-    paddingLeft: 15,
-    borderRadius: 15,
-    height: 38,
-    textAlign: 'center',
-  },
-  summaryText: {
+  summary: {
     fontSize: 15,
-    textAlign: 'center',
-    marginBottom: 20,
+    lineHeight: 24,
+    textAlign: 'justify',
   },
-  seeAll: {
-    textAlign: 'right',
-    marginTop: -17,
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
-
-export default AnimeDetail;

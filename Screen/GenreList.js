@@ -1,5 +1,5 @@
 import {useTheme} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, memo} from 'react';
 import {
   Dimensions,
   StyleSheet,
@@ -7,70 +7,22 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  SafeAreaView,
 } from 'react-native';
 import Banner from '../Ads/Banner';
 import ActivityLoader from '../Components/ActivityLoader';
 import TopBar from '../Components/TopBar';
 import {genrePage} from '../Scraping/genrePage';
+import LinearGradient from 'react-native-linear-gradient';
 
-const dimension = Dimensions.get('window');
+const {width} = Dimensions.get('window');
+const CARD_WIDTH = (width - 40) / 2;
 
-// const colorList = [
-//   '#15C0E8',
-//   '#07558A',
-//   '#64174D',
-//   '#64174D',
-//   '#16B483',
-//   '#19BDBA',
-//   '#104F55',
-//   '#1F255E',
-//   '#70C8BC',
-//   '#E1B6B4',
-//   '#B99031',
-//   '#B99031',
-//   '#F6D0A4',
-//   '#CF57A2',
-//   '#F89122',
-//   '#FFC426',
-//   '#92524A',
-//   '#FFFE0B',
-//   'blue',
-//   '#C58230',
-//   '#AD705C',
-//   '#7B2418',
-//   '#B50AFC',
-//   '#3A381D',
-//   '#791718',
-//   '#FEDD02',
-//   '#F7BBA6',
-//   '#CE2027',
-//   '#EC2B28',
-//   '#66339B',
-//   '#403E2A',
-//   '#AF1F58',
-//   '#50002F',
-//   '#FF6700',
-//   '#FC027D',
-//   '#81419B',
-//   '#A09EA6',
-//   '#D5B04D',
-//   '#115CAE',
-//   '#175F0C',
-//   '#EC2B28',
-//   '#000000',
-//   '#460D55',
-//   '#EC2B28',
-//   '#7C2E86',
-// ];
-
-const GenreContainer = ({data, navigation, colors, index}) => {
+const GenreCard = memo(({data, navigation, colors}) => {
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
-      style={[
-        styles.genreStyleContainer,
-        {backgroundColor: colors.titleColor.orange},
-      ]}
+      activeOpacity={0.85}
+      style={[styles.cardWrapper, {backgroundColor: colors.card}]}
       onPress={() =>
         navigation.navigate('SeeAll', {
           data: '',
@@ -79,79 +31,121 @@ const GenreContainer = ({data, navigation, colors, index}) => {
           title: data.genre,
         })
       }>
-      <Text style={[styles.genreStyle, {color: colors.carouselCardText.title}]}>
+      <LinearGradient
+        colors={[colors.titleColor.orange, colors.titleColor.orange + 'CC']}
+        style={styles.gradient}
+      />
+
+      <Text
+        numberOfLines={2}
+        style={[styles.genreText, {color: colors.carouselCardText.title}]}>
         {data.genre}
       </Text>
     </TouchableOpacity>
   );
-};
+});
 
 const GenreList = ({navigation}) => {
-  const [genreList, setGenreList] = useState();
+  const [genreList, setGenreList] = useState(null);
+  const {colors} = useTheme();
 
   useEffect(() => {
-    genrePage().then(res => {
-      setGenreList(res);
-    });
+    const loadGenres = async () => {
+      try {
+        const res = await genrePage();
+        setGenreList(res);
+      } catch (e) {
+        console.log('Genre load error:', e);
+      }
+    };
+
+    loadGenres();
   }, []);
 
-  const {colors} = useTheme();
   return (
-    <View style={[styles.container, {backgroundColor: colors.background}]}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: colors.background}]}>
+      {/* 🔥 Header ALWAYS on top */}
       <TopBar
         title="Genre List"
         navigation={navigation}
         showNavigation={false}
       />
+
       <Banner />
-      <View style={[styles.mainContainer, {height: dimension.height - 153}]}>
-        {genreList ? (
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            data={genreList}
-            renderItem={({item, index}) => (
-              <GenreContainer
-                data={item}
-                index={index}
-                navigation={navigation}
-                colors={colors}
-              />
-            )}
-            keyExtractor={(item, index) => index}
-            numColumns={2}
-          />
-        ) : (
-          <ActivityLoader />
-        )}
-      </View>
-    </View>
+
+      {/* 🔥 Body Content */}
+      {!genreList ? (
+        <View style={styles.loaderBody}>
+          <ActivityLoader title="Loading Genres..." />
+        </View>
+      ) : (
+        <FlatList
+          data={genreList}
+          numColumns={2}
+          keyExtractor={(item, index) => `${item.genre}-${index}`}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          columnWrapperStyle={styles.row}
+          initialNumToRender={12}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
+          renderItem={({item}) => (
+            <GenreCard data={item} navigation={navigation} colors={colors} />
+          )}
+        />
+      )}
+    </SafeAreaView>
   );
 };
 
+export default GenreList;
+
 const styles = StyleSheet.create({
   container: {
-    height: dimension.height,
+    flex: 1,
   },
-  mainContainer: {
+
+  // 🔥 Only loader body is centered (NOT header)
+  loaderBody: {
+    flex: 1,
     justifyContent: 'center',
-    alignContent: 'center',
-    display: 'flex',
     alignItems: 'center',
   },
-  genreStyle: {
-    padding: 20,
-    textAlign: 'center',
-    fontSize: 15,
-    fontWeight: '600',
+
+  listContent: {
+    paddingHorizontal: 15,
+    paddingTop: 15,
+    paddingBottom: 40,
   },
-  genreStyleContainer: {
-    width: dimension.width / 2.3,
+  row: {
+    justifyContent: 'space-between',
+  },
+
+  cardWrapper: {
+    width: CARD_WIDTH,
+    height: 90,
+    borderRadius: 18,
     marginBottom: 15,
-    borderRadius: 15,
-    marginRight: 10,
-    marginLeft: 10,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
+
+  gradient: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.9,
+  },
+
+  genreText: {
+    fontSize: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+    paddingHorizontal: 10,
+    letterSpacing: 0.3,
   },
 });
-
-export default GenreList;

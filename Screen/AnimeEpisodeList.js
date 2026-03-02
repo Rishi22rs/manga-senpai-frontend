@@ -1,115 +1,193 @@
-import React, { useState } from 'react';
+import React, {useMemo, useState, useCallback} from 'react';
 import {
-  Dimensions,
   StyleSheet,
   View,
   Text,
   FlatList,
   TouchableOpacity,
+  SafeAreaView,
+  Dimensions,
 } from 'react-native';
 import TopBar from '../Components/TopBar';
 import {useTheme} from '@react-navigation/native';
 import {interstitial} from '../Ads/Interstitial';
 import Banner from '../Ads/Banner';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import LinearGradient from 'react-native-linear-gradient';
 
-const dimension = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 const AnimeEpisodeList = ({route, navigation}) => {
   const {colors} = useTheme();
-  const [episodeList,setEpisodeList]=useState(route.params.episodeList)
-  const [switchArrow,setSwitchArrow]=useState(true)
+  const originalEpisodes = route.params.episodeList || [];
 
-  return (
-    <View style={[styles.container, {backgroundColor: colors.background}]}>
-      <TopBar title={route.params.name} navigation={navigation} />
-      <Banner />
-      <View style={[styles.mainContainer, {height: dimension.height - 120}]}>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={{
-            backgroundColor: colors.titleColor.orange,
-            margin: 20,
-            paddingLeft:15 ,
-            paddingVertical: 10,
-            borderRadius: 5,
-            left:dimension.width/2-45,
-            flexDirection:'row'
-          }} onPress={()=>{
-            setSwitchArrow(prev=>!prev)
-            setEpisodeList([...episodeList.reverse()])}}>
-          <Text style={{color: colors.background, fontWeight: 'bold'}}>
-            Sort
+  const [ascending, setAscending] = useState(false);
+
+  // 🔥 SAFE SORT (no state mutation)
+  const episodeList = useMemo(() => {
+    const list = [...originalEpisodes];
+    return ascending ? list.reverse() : list;
+  }, [ascending, originalEpisodes]);
+
+  const handleEpisodePress = useCallback(
+    item => {
+      try {
+        interstitial.load();
+        interstitial.show();
+      } catch (e) {
+        console.log('Ad error:', e);
+      }
+
+      navigation.navigate('Manga', {
+        link: item.link,
+      });
+    },
+    [navigation],
+  );
+
+  const renderEpisodeCard = ({item, index}) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => handleEpisodePress(item)}
+        style={styles.cardWrapper}>
+        {/* 🔥 Gradient Card (Modern Look) */}
+        <LinearGradient
+          colors={[colors.titleColor.orange, colors.titleColor.orange + 'CC']}
+          style={styles.card}>
+          {/* Chapter Title */}
+          <Text style={[styles.chapterTitle, {color: colors.background}]}>
+            {item.chapterName}
           </Text>
-          <Icon
-          style={{borderColor: 'white',backgroundColor:colors['titleColor']['orange'],borderRadius:4,marginRight:10}}
-          name={switchArrow?"arrow-up":"arrow-down"}
-          size={20}
-          color={colors.background}
-        />
-        </TouchableOpacity>
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          data={episodeList}
-          renderItem={({item, index}) => (
-            <TouchableOpacity
-              onPress={() => {
-                try {
-                  interstitial.load();
-                  interstitial.show();
-                } catch (e) {
-                  console.log(e);
-                }
-                navigation.navigate('Manga', {
-                  link: item.link,
-                });
-              }}
-              activeOpacity={0.7}
-              style={[
-                {
-                  backgroundColor: colors.titleColor.orange,
-                },
-                styles.card,
-              ]}>
+
+          {/* Meta Row */}
+          <View style={styles.metaRow}>
+            <Text style={[styles.chapterIndex, {color: colors.background}]}>
+              Chapter {index + 1}
+            </Text>
+
+            {!!item.datetime && (
               <Text
-                style={{
-                  fontWeight: 'bold',
-                  fontSize: 20,
-                  color: colors.background,
-                }}>
-                {item.chapterName}
-              </Text>
-              <Text style={{color: colors.titleColor.grey}}>
+                style={[styles.chapterDate, {color: colors.titleColor.grey}]}>
                 {item.datetime}
               </Text>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item, index) => index}
-        />
+            )}
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: colors.background}]}>
+      <TopBar title={route.params.name} navigation={navigation} />
+
+      <Banner />
+
+      {/* 🔥 Modern Sticky Sort Bar */}
+      <View style={styles.sortContainer}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setAscending(prev => !prev)}
+          style={[
+            styles.sortButton,
+            {backgroundColor: colors.titleColor.orange},
+          ]}>
+          <Icon
+            name={ascending ? 'sort-ascending' : 'sort-descending'}
+            size={18}
+            color={colors.background}
+          />
+          <Text style={[styles.sortText, {color: colors.background}]}>
+            {ascending ? 'Old → New' : 'New → Old'}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={[styles.countText, {color: colors.animeCard.subText}]}>
+          {episodeList.length} Chapters
+        </Text>
       </View>
-    </View>
+
+      {/* 🔥 Optimized Chapter List */}
+      <FlatList
+        data={episodeList}
+        renderItem={renderEpisodeCard}
+        keyExtractor={(item, index) => `${item.link || 'chapter'}-${index}`}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        initialNumToRender={12}
+        maxToRenderPerBatch={10}
+        windowSize={7}
+        removeClippedSubviews={true}
+      />
+    </SafeAreaView>
   );
 };
 
+export default AnimeEpisodeList;
+
 const styles = StyleSheet.create({
   container: {
-    height: dimension.height,
+    flex: 1, // 🔥 FIXES header centering + scroll bugs
   },
-  mainContainer: {
-    alignContent: 'center',
-    display: 'flex',
+
+  // 🔥 Sort Bar
+  sortContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  sortButton: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 6,
+  },
+  sortText: {
+    marginLeft: 6,
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: '600',
+    opacity: 0.8,
+  },
+
+  // 🔥 Modern Episode Card
+  listContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 80,
+  },
+  cardWrapper: {
+    marginBottom: 12,
   },
   card: {
-    padding: 20,
-    margin: 3,
-    borderRadius: 20,
-    width: dimension.width,
+    borderRadius: 18,
+    padding: 18,
+    width: '100%',
+    elevation: 4,
   },
-  episodeContainer: {
-    display: 'flex',
+  chapterTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  chapterIndex: {
+    fontSize: 13,
+    fontWeight: '700',
+    opacity: 0.9,
+  },
+  chapterDate: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
-
-export default AnimeEpisodeList;

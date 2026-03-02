@@ -1,93 +1,154 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   View,
   FlatList,
   StyleSheet,
-  Dimensions,
   Text,
   SafeAreaView,
-  TouchableOpacity,
+  RefreshControl,
+  Dimensions,
 } from 'react-native';
 import AnimeCard from '../Components/AnimeCard';
-import {ThemePalette, selectedTheme} from '../Theme/ThemePalette';
 import TopBar from '../Components/TopBar';
 import {useFocusEffect, useTheme} from '@react-navigation/native';
-import {mangaListPages} from '../Scraping/mangaListPages';
 import Banner from '../Ads/Banner';
-import { getStoredData } from '../Hooks/localStorage';
+import {getStoredData} from '../Hooks/localStorage';
+import LinearGradient from 'react-native-linear-gradient';
 
-const dimension = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
-const Saved = ({route, navigation}) => {
-    const [savedData,setSavedData]=useState()
-    useFocusEffect(
-      useCallback(() =>{
-        getStoredData('liked').then(res => {
-          setSavedData(res);
-        })
-      },[]
-      ),
-    );          
-        console.log(savedData)
-    
-    const {colors} = useTheme();
+const Saved = ({navigation}) => {
+  const [savedData, setSavedData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const {colors} = useTheme();
+
+  const loadSaved = async () => {
+    try {
+      const res = await getStoredData('liked');
+      setSavedData(res || []);
+    } catch (e) {
+      console.log('Saved load error:', e);
+      setSavedData([]);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadSaved();
+    }, []),
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadSaved();
+    setRefreshing(false);
+  };
+
+  const renderEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <LinearGradient
+        colors={[colors.titleColor.orange, colors.titleColor.orange + 'CC']}
+        style={styles.emptyCard}>
+        <Text style={[styles.emptyEmoji, {color: colors.epBtn.color}]}>❤️</Text>
+        <Text style={[styles.emptyTitle, {color: colors.epBtn.color}]}>
+          No Saved Manga
+        </Text>
+        <Text style={[styles.emptySubtitle, {color: colors.epBtn.color}]}>
+          Tap the heart icon on any manga to save it here
+        </Text>
+      </LinearGradient>
+    </View>
+  );
 
   return (
     <SafeAreaView
-      style={[styles.container, {backgroundColor: colors['background']}]}>
+      style={[styles.container, {backgroundColor: colors.background}]}>
       <TopBar title={'Saved'} navigation={navigation} />
+
       <Banner />
-      <View
-        style={{
-          paddingBottom:90,
-          marginLeft: 5,
-          height: route.params?.url
-            ? dimension.height - 120
-            : dimension.height - 80,
-        }}>
-        {savedData&&savedData.length ? (
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            data={savedData}
-            renderItem={({item}) => (
-              <AnimeCard
-                title={item.title}
-                banner={item.banner}
-                detail={item.detail}
-                animeLink={item.animeLink}
-                navigation={navigation}
-              />
-            )}
-            numColumns={2}
+
+      {/* 🔥 Modern Grid List */}
+      <FlatList
+        data={savedData}
+        numColumns={2}
+        keyExtractor={(item, index) =>
+          `${item.animeLink || item.title}-${index}`
+        }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.listContent,
+          savedData.length === 0 && {flex: 1},
+        ]}
+        columnWrapperStyle={styles.row}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.titleColor.orange}
           />
-        ):<Text
-        style={{
-          textAlign: 'center',
-          color: colors['titleColor']['orange'],
-        }}>
-        {`Nothing here`}
-      </Text>}
-      </View>
+        }
+        ListEmptyComponent={renderEmpty}
+        renderItem={({item}) => (
+          <AnimeCard
+            title={item.title}
+            banner={item.banner}
+            detail={item.detail}
+            animeLink={item.animeLink}
+            navigation={navigation}
+          />
+        )}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        removeClippedSubviews={true}
+      />
     </SafeAreaView>
   );
 };
 
+export default Saved;
+
 const styles = StyleSheet.create({
   container: {
-    height: dimension.height,
-    alignItems:'center',
+    flex: 1, // 🔥 FIX: prevents TopBar centering bug
   },
-  epBtn: {
+
+  // Grid spacing
+  listContent: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 100, // space for banner/nav
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+
+  // 🔥 Modern Empty State
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyCard: {
+    width: width - 60,
+    borderRadius: 24,
+    padding: 30,
+    alignItems: 'center',
+    elevation: 6,
+  },
+  emptyEmoji: {
+    fontSize: 42,
     marginBottom: 10,
-    marginLeft: 5,
-    marginRight: 5,
-    padding: 10,
-    borderRadius: 15,
-    width: 40,
-    height: 38,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
     textAlign: 'center',
+    lineHeight: 22,
+    opacity: 0.95,
   },
 });
-
-export default Saved;

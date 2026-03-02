@@ -1,34 +1,40 @@
 const dark = {
-    dark: false,
-    colors: {
-      primary: 'red',
-      card: '#2B2B2B',
-      text: 'red',
-      border: '#2B2B2B',
-      notification: 'black',
-      background:"#2B2B2B",
-    titleColor:{
-        orange:"#E5A168",
-        grey:"#777675"
-    },
-    carouselCardText:{
-        title:'#E4E5E7'
-    },
-    animeCard:{
-        title:"#E4E5E7",
-        subText:"#949494"
-    },
-    animedetail:{
-        title:"#414141",
-        detail:"#858585"
-    },
-    genreBackgroundInDetail:'#404040',
-    genreTextColor:'#868686',
-    epBtn:{
-        background:"#376C96",
-        color:"white"
-    }
-    },
-}
+  dark: true,
+  colors: {
+    primary: '#FF6B35',
+    card: '#121212', // deeper black card
+    text: '#FFFFFF',
+    border: '#1F1F1F',
+    notification: '#000000',
+    background: '#0A0A0A', // true manga reader black
 
-export default dark
+    titleColor: {
+      orange: '#FF6B35',
+      grey: '#9CA3AF', // modern grey for dark mode
+    },
+
+    carouselCardText: {
+      title: '#FFFFFF',
+    },
+
+    animeCard: {
+      title: '#F9FAFB', // clean white
+      subText: '#9CA3AF', // soft grey
+    },
+
+    animedetail: {
+      title: '#FFFFFF', // FIX: was too dark before
+      detail: '#D1D5DB', // better readability
+    },
+
+    genreBackgroundInDetail: '#1F2933', // modern chip background
+    genreTextColor: '#E5E7EB',
+
+    epBtn: {
+      background: '#FF6B35',
+      color: '#FFFFFF',
+    },
+  },
+};
+
+export default dark;
