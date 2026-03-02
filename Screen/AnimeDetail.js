@@ -15,6 +15,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import ActivityLoader from '../Components/ActivityLoader';
 import {Icon} from 'react-native-elements';
 import {mangaDetail} from '../Scraping/mangaDetail';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const {width, height} = Dimensions.get('window');
 
@@ -22,6 +23,7 @@ const AnimeDetail = ({route}) => {
   const {colors} = useTheme();
   const [data, setData] = useState(null);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     mangaDetail(route.params.animeLink).then(res => {
@@ -70,7 +72,10 @@ const AnimeDetail = ({route}) => {
       {/* 🔥 SINGLE ScrollView (IMPORTANT) */}
       {/* Back Button */}
       <Pressable
-        style={[styles.backButton, {backgroundColor: colors.card}]}
+        style={[
+          styles.backButton,
+          {backgroundColor: colors.card, top: insets.top + 10},
+        ]}
         onPress={() => {
           if (navigation.canGoBack()) {
             navigation.goBack();

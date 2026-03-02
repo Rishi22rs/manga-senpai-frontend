@@ -116,7 +116,7 @@ const Discord = () => {
               color: colors.animeCard.title,
               fontWeight: '800',
             }}>
-            {`1.0.0 (${appVersion})`}
+            {`2.0.0 (${appVersion})`}
           </Text>
         </View>
 

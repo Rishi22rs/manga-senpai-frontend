@@ -5,7 +5,8 @@ import {EventRegister} from 'react-native-event-listeners';
 import {getData, ThemePalette} from './Theme/ThemePalette';
 import mobileAds from 'react-native-google-mobile-ads';
 import SplashScreen from 'react-native-splash-screen';
-import {LogBox} from 'react-native';
+import {LogBox, StatusBar} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 const App = () => {
   if (__DEV__) {
@@ -39,6 +40,7 @@ const App = () => {
   return (
     <NavigationContainer
       theme={isDark ? ThemePalette.dark : ThemePalette.light}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <StackNavigation />
     </NavigationContainer>
   );

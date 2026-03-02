@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import {EventRegister} from 'react-native-event-listeners';
 import {useTheme} from '@react-navigation/native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const dimension = Dimensions.get('window');
 
@@ -36,8 +37,14 @@ const TopBar = ({
     });
   }, []);
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={[styles.myStatusbar, {backgroundColor: colors.background}]}>
+    <View
+      style={[
+        styles.myStatusbar,
+        {backgroundColor: colors.background, paddingTop: insets.top + 10},
+      ]}>
       <View style={styles.backButtonContainer}>
         {showNavigation && (
           <TouchableOpacity
