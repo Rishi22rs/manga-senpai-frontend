@@ -9,8 +9,9 @@ import {
   ScrollView,
   StatusBar,
   Pressable,
+  Image,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
+// import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import ActivityLoader from '../Components/ActivityLoader';
 import {Icon} from 'react-native-elements';
@@ -48,18 +49,19 @@ const AnimeDetail = ({route}) => {
           styles.bannerWrapper,
           {backgroundColor: colors['titleColor']['orange']},
         ]}>
-        <FastImage
+        <Image
           source={{
             uri: data.banner,
-            priority: FastImage.priority.high,
-            cache: FastImage.cacheControl.immutable,
+            // priority: FastImage.priority.high,
+            // cache: FastImage.cacheControl.immutable,
             headers: {
               Referer: 'https://mangakatana.com/',
               'User-Agent': 'Mozilla/5.0',
             },
           }}
           style={styles.banner}
-          resizeMode={FastImage.resizeMode.cover}
+          // resizeMode={FastImage.resizeMode.cover}
+          resizeMode="cover"
         />
 
         {/* Gradient overlay */}

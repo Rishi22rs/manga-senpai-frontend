@@ -1,10 +1,10 @@
 import {useTheme} from '@react-navigation/native';
 import React, {useEffect, useState, memo} from 'react';
-import {StyleSheet, View, Dimensions, FlatList} from 'react-native';
+import {StyleSheet, View, Dimensions, FlatList, Image} from 'react-native';
 import ActivityLoader from '../Components/ActivityLoader';
 import TopBar from '../Components/TopBar';
 import {mangaChapter} from '../Scraping/mangaChapter';
-import FastImage from 'react-native-fast-image';
+// import FastImage from 'react-native-fast-image';
 
 const dimensions = Dimensions.get('screen');
 
@@ -21,16 +21,8 @@ const Manga = ({route, navigation}) => {
         if (res && res.length > 0) {
           setImages(res);
 
-          // 🔥 Strong preloading (better than Image.prefetch)
-          FastImage.preload(
-            res.map(url => ({
-              uri: url,
-              headers: {
-                Referer: 'https://mangakatana.com/',
-                'User-Agent': 'Mozilla/5.0',
-              },
-            })),
-          );
+          // 🔥 Normal preloading
+          await Promise.all(res.map(url => Image.prefetch(url)));
         }
       } catch (err) {
         console.log('Chapter load error:', err);
@@ -58,17 +50,18 @@ const Manga = ({route, navigation}) => {
           </View>
         )}
 
-        <FastImage
+        <Image
           style={styles.image}
-          resizeMode={FastImage.resizeMode.contain}
+          // resizeMode={FastImage.resizeMode.contain}
+          resizeMode="contain"
           source={{
             uri: item,
-            priority: FastImage.priority.high,
-            cache: FastImage.cacheControl.immutable,
-            headers: {
-              Referer: 'https://mangakatana.com/',
-              'User-Agent': 'Mozilla/5.0',
-            },
+            // priority: FastImage.priority.high,
+            // cache: FastImage.cacheControl.immutable,
+            // headers: {
+            //   Referer: 'https://mangakatana.com/',
+            //   'User-Agent': 'Mozilla/5.0',
+            // },
           }}
           onLoadStart={() => {
             setImgLoading(true);

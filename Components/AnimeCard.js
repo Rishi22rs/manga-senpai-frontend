@@ -6,9 +6,10 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import FastImage from 'react-native-fast-image';
+// import FastImage from 'react-native-fast-image';
 import LinearGradient from 'react-native-linear-gradient';
 import {isDataPresent, storeData} from '../Hooks/localStorage';
 import {interstitial} from '../Ads/Interstitial';
@@ -86,14 +87,15 @@ const AnimeCard = ({title, banner, detail, animeLink, navigation}) => {
           {backgroundColor: colors['titleColor']['orange']},
         ]}>
         {/* Cover Image */}
-        <FastImage
+        <Image
           source={{
             uri: banner,
-            priority: FastImage.priority.high,
-            cache: FastImage.cacheControl.immutable,
+            // priority: FastImage.priority.high,
+            // cache: FastImage.cacheControl.immutable,
           }}
           style={styles.image}
-          resizeMode={FastImage.resizeMode.cover}
+          // resizeMode={FastImage.resizeMode.cover}
+          resizeMode="cover"
         />
 
         {/* 🔥 Bottom Gradient (modern look + readability) */}
